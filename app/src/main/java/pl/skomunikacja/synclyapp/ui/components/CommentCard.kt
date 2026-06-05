@@ -3,18 +3,24 @@ package pl.skomunikacja.synclyapp.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,10 +38,14 @@ import androidx.compose.ui.unit.sp
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Expand
+import compose.icons.fontawesomeicons.solid.ExpandAlt
 import compose.icons.fontawesomeicons.solid.Minus
 import compose.icons.fontawesomeicons.solid.Reply
 import pl.skomunikacja.synclyapp.model.PostComment
+import pl.skomunikacja.synclyapp.ui.theme.Black200
 import pl.skomunikacja.synclyapp.ui.theme.Gray400
+import pl.skomunikacja.synclyapp.ui.theme.Gray600
+import pl.skomunikacja.synclyapp.ui.theme.Red100
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
 import pl.skomunikacja.synclyapp.ui.theme.White100
 import pl.skomunikacja.synclyapp.ui.timeAgoOrDate
@@ -44,10 +54,10 @@ import pl.skomunikacja.synclyapp.view_model.CommentViewModel
 @Composable
 fun CommentCard(
     comment: PostComment,
+    modifier: Modifier = Modifier,
     currentUserId: Long = 1L,
     onLikeClick: (Long) -> Unit = {},
     onReplyClick: (PostComment) -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     var showReplies by remember { mutableStateOf(false) }
     val viewModel = remember(comment.id) { CommentViewModel(comment) }
@@ -59,7 +69,8 @@ fun CommentCard(
     Column(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
         ) {
             ProfileAvatar(
                 onAvatarClick = {},
@@ -72,88 +83,82 @@ fun CommentCard(
             )
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Surface(
+                    color = Black200,
+                    shape = RoundedCornerShape(
+                        topStart = 4.dp,
+                        topEnd = 16.dp,
+                        bottomEnd = 16.dp,
+                        bottomStart = 16.dp
+                    )
                 ) {
-                    Text(
-                        text = comment.authorName,
-                        color = White100,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Text(
-                        text = "@${comment.authorUsername}",
-                        color = Gray400,
-                        fontSize = 12.sp
-                    )
-                    Text(
-                        text = "• ${timeAgoOrDate(comment.createdAt)}",
-                        color = Gray400,
-                        fontSize = 12.sp
-                    )
+                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                        Text(
+                            text = comment.authorName,
+                            color = White100,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = comment.content,
+                            color = Gray400,
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                Text(
-                    text = comment.content,
-                    color = White100,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
+                // Action row
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(start = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Like
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.clickable {
-                            viewModel.toggleLike(currentUserId)
+                            onLikeClick(comment.id)
                         }
                     ) {
                         Icon(
                             if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Like comment",
-                            tint = if (isLiked) Color(0xFFFF6B6B) else Gray400,
-                            modifier = Modifier.size(16.dp)
+                            contentDescription = "Like",
+                            tint = if (isLiked) Red100 else Gray400,
+                            modifier = Modifier.size(15.dp)
                         )
                         if (likesCount > 0) {
                             Text(
                                 text = likesCount.toString(),
-                                color = Gray400,
+                                color = if (isLiked) Red100 else Gray400,
                                 fontSize = 12.sp
                             )
                         }
                     }
 
-                    // Reply button
+                    // Reply
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.clickable {
-                            println("REPLYING TO: ${comment.id}")
-                            onReplyClick(comment)
-                        }
+                        modifier = Modifier.clickable { onReplyClick(comment) }
                     ) {
                         Icon(
                             FontAwesomeIcons.Solid.Reply,
                             contentDescription = "Reply",
                             tint = Gray400,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(15.dp)
                         )
                         Text(
-                            text = "Odpowiedz",
+                            text = "Reply",
                             color = Gray400,
                             fontSize = 12.sp
                         )
                     }
 
-                    // Show replies button
                     if (comment.replies.isNotEmpty()) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -161,13 +166,13 @@ fun CommentCard(
                             modifier = Modifier.clickable { showReplies = !showReplies }
                         ) {
                             Icon(
-                                if (showReplies) FontAwesomeIcons.Solid.Minus else FontAwesomeIcons.Solid.Expand,
-                                contentDescription = if (showReplies) "Hide replies" else "Show replies",
+                                if (showReplies) FontAwesomeIcons.Solid.ExpandAlt else FontAwesomeIcons.Solid.Expand,
+                                contentDescription = null,
                                 tint = Teal100,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(15.dp)
                             )
                             Text(
-                                text = "${comment.replies.size} odpowiedzi",
+                                text = "${comment.replies.size} replies",
                                 color = Teal100,
                                 fontSize = 12.sp
                             )
@@ -177,20 +182,31 @@ fun CommentCard(
             }
         }
 
-        // Replies
         if (showReplies && comment.replies.isNotEmpty()) {
             Spacer(modifier = Modifier.height(12.dp))
-            Column(
-                modifier = Modifier.padding(start = 44.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Row(
+                modifier = Modifier
+                    .padding(start = 18.dp)
+                    .height(IntrinsicSize.Min)
             ) {
-                comment.replies.forEach { reply ->
-                    CommentCard(
-                        comment = reply,
-                        currentUserId = currentUserId,
-                        onLikeClick = onLikeClick,
-                        onReplyClick = onReplyClick
-                    )
+                Box(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .fillMaxHeight()
+                        .background(Gray600)
+                )
+                Column(
+                    modifier = Modifier.padding(start = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    comment.replies.forEach { reply ->
+                        CommentCard(
+                            comment = reply,
+                            currentUserId = currentUserId,
+                            onLikeClick = onLikeClick,
+                            onReplyClick = onReplyClick
+                        )
+                    }
                 }
             }
         }

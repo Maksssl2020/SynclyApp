@@ -1,6 +1,9 @@
 package pl.skomunikacja.synclyapp
 
+import android.app.Application
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
@@ -35,33 +39,48 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
+import pl.skomunikacja.synclyapp.model.UserProfileUpdateRequest
+import pl.skomunikacja.synclyapp.ui.components.AvatarUploadDialog
 import pl.skomunikacja.synclyapp.ui.components.ProfileAvatar
 import pl.skomunikacja.synclyapp.ui.components.ProfileStatCard
+import pl.skomunikacja.synclyapp.ui.theme.Black100
+import pl.skomunikacja.synclyapp.ui.theme.Black200
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Black400
 import pl.skomunikacja.synclyapp.ui.theme.Gray300
+import pl.skomunikacja.synclyapp.ui.theme.Red100
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
 import pl.skomunikacja.synclyapp.ui.theme.White100
 import pl.skomunikacja.synclyapp.view_model.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = ProfileViewModel()
+    viewModel: ProfileViewModel = viewModel(),
+    onNavigateToSignInScreen: () -> Unit
 ) {
+    val context = LocalContext.current
     val authenticationData by ApplicationManager.authenticationData.collectAsState()
     val userProfile by viewModel.userProfile.collectAsState()
+    val avatarUploadState by viewModel.state.collectAsState()
+    var showAvatarUploadDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        authenticationData?.let { viewModel.fetchUserProfileData(it.userId) }
+    LaunchedEffect(authenticationData?.userId) {
+        authenticationData?.userId?.let { userId ->
+            viewModel.fetchUserProfileData(userId)
+        }
     }
 
     var isEditMode by remember { mutableStateOf(false) }
@@ -72,6 +91,7 @@ fun ProfileScreen(
     var website by remember { mutableStateOf(userProfile?.website ?: "") }
     var location by remember { mutableStateOf(userProfile?.location ?: "") }
     var avatar by remember { mutableStateOf(userProfile?.avatar) }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(userProfile) {
         userProfile?.let {
@@ -95,12 +115,9 @@ fun ProfileScreen(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Profile Avatar with edit option
         Box(
             modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(Teal100),
+                .size(120.dp),
             contentAlignment = Alignment.Center
         ) {
             ProfileAvatar(
@@ -112,12 +129,15 @@ fun ProfileScreen(
             )
             if (isEditMode) {
                 IconButton(
-                    onClick = { /* TODO: Implement image picker */ },
+                    onClick = {
+                        showAvatarUploadDialog = true
+                    },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .size(32.dp)
                         .clip(CircleShape)
                         .background(Black300)
+                        .border(2.dp, White100, CircleShape)
                 ) {
                     Icon(
                         Icons.Default.Edit,
@@ -215,7 +235,6 @@ fun ProfileScreen(
             }
         }
 
-        // Stats Row (only in display mode)
         if (!isEditMode) {
             Row(
                 modifier = Modifier
@@ -223,9 +242,9 @@ fun ProfileScreen(
                     .padding(vertical = 24.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                ProfileStatCard("Posty", "42")
-                ProfileStatCard("Znajomi", "128")
-                ProfileStatCard("Obserwujący", "89")
+                ProfileStatCard("Posts", (userProfile?.postsCount ?: 0).toString())
+                ProfileStatCard("Friends", (userProfile?.friendsCount ?: 0).toString())
+                ProfileStatCard("Followers", (userProfile?.followersCount ?: 0).toString())
             }
         }
 
@@ -244,12 +263,26 @@ fun ProfileScreen(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Anuluj")
+                    Text("Cancel")
                 }
 
                 Button(
                     onClick = {
-                        // TODO: Save changes to backend
+                        if (authenticationData != null) {
+                            coroutineScope.launch {
+                                viewModel.updateUserProfile(
+                                    userId = authenticationData!!.userId,
+                                    data = UserProfileUpdateRequest(
+                                        username = username,
+                                        email = email,
+                                        displayName = displayName,
+                                        bio = bio,
+                                        location = location,
+                                        website = website
+                                    )
+                                )
+                            }
+                        }
                         isEditMode = false
                     },
                     modifier = Modifier.weight(1f),
@@ -259,7 +292,7 @@ fun ProfileScreen(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Zapisz", fontWeight = FontWeight.Medium)
+                    Text("Save", fontWeight = FontWeight.Medium)
                 }
             }
         } else {
@@ -281,55 +314,62 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Edytuj profil",
+                    text = "Edit Profile",
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            }
-
-            OutlinedButton(
-                onClick = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = White100
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    text = "Ustawienia",
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
 
             Button(
                 onClick = {
-                    // TODO: Implement logout functionality
+                    viewModel.logout()
+                    onNavigateToSignInScreen()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
+                    containerColor = Red100,
                     contentColor = White100
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Icon(
-                    Icons.Default.Delete,
+                    Icons.AutoMirrored.Default.ExitToApp,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Wyloguj się",
+                    text = "Logout",
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
         }
     }
+
+    if (showAvatarUploadDialog) {
+        AvatarUploadDialog(
+            uploadState = avatarUploadState,
+            handleFileChange = { uri: Uri? ->
+               viewModel.handleFileChange(uri)
+            },
+            onDismiss = {
+                showAvatarUploadDialog = false
+                viewModel.clearSelectedAvatar()
+            },
+            onSaveAvatar = {
+                showAvatarUploadDialog = false
+                coroutineScope.launch {
+                    if (authenticationData?.userId != null) {
+                        viewModel.uploadAvatar(context = context, userId = authenticationData!!.userId)
+                    }
+                }
+            }
+        )
+    }
+
 }
 
 @Composable

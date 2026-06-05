@@ -37,8 +37,20 @@ interface ApiLikesService {
         @Query("commentId") commentId: Long
     ): Response<Unit>
 
+    @POST("api/v1/likes/android-app/like/user-profile")
+    suspend fun likeUserProfile(
+        @Query("userId") userId: Long,
+        @Query("userProfileId") userProfileId: Long
+    ): Response<Unit>
+
     @GET("api/v1/likes/user/liked-profiles")
     suspend fun getUserLikedProfilesIds(
         @Query("userId") userId: Long
     ): List<Long>
+
+    @DELETE("api/v1/likes/android-app/unlike/user-profile")
+    suspend fun unlikeUserProfile(
+        @Query("userId") userId: Long,
+        @Query("userProfileId") userProfileId: Long
+    ): Response<Unit>
 }

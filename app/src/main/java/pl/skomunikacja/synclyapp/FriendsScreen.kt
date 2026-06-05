@@ -53,7 +53,7 @@ fun FriendsScreen(
 ) {
     val context = LocalContext.current
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Znajomi", "Oczekujące", "Wysłane")
+    val tabs = listOf("Friends", "Pending", "Sent")
 
     val authenticationData by ApplicationManager.authenticationData.collectAsState()
     val friends by viewModel.friends.collectAsState()
@@ -120,11 +120,11 @@ fun FriendsScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Szukaj znajomych...", color = Gray300) },
+                    placeholder = { Text("Search for friends...", color = Gray300) },
                     leadingIcon = {
                         Icon(
                             Icons.Default.Search,
-                            contentDescription = "Szukaj",
+                            contentDescription = "search",
                             tint = Gray300
                         )
                     },
@@ -150,7 +150,9 @@ fun FriendsScreen(
                             onAvatarClick = {
                                 navController.navigate("user_profile/${friend.user.userId}")
                             },
-                            onMessageClick = { /* TODO: Navigate to chat */ },
+                            onCardClick = {
+                                navController.navigate("user_profile/${friend.user.userId}")
+                            },
                             onMoreClick = { /* TODO: Show options menu */ }
                         )
                     }

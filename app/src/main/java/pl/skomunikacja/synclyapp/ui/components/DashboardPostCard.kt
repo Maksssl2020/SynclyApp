@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,7 +65,6 @@ import compose.icons.fontawesomeicons.solid.Link
 import compose.icons.fontawesomeicons.solid.QuoteLeft
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import pl.skomunikacja.synclyapp.model.Image
 import pl.skomunikacja.synclyapp.model.PostCollection
 import pl.skomunikacja.synclyapp.model.post.LinkPost
 import pl.skomunikacja.synclyapp.model.post.PhotoPost
@@ -95,7 +95,7 @@ fun DashboardPostCard(
     var showSaveModal by remember { mutableStateOf(false) }
     var showPhotoModal by remember { mutableStateOf(false) }
     var showVideoModal by remember { mutableStateOf(false) }
-    var selectedMediaIndex by remember { mutableStateOf(0) }
+    var selectedMediaIndex by remember { mutableIntStateOf(0) }
 
     val timeAgoOrDate = timeAgoOrDate(post.createdAt)
 
@@ -152,7 +152,7 @@ fun DashboardPostCard(
                             modifier = Modifier.clickable { onAuthorClick(post.authorId) }
                         )
                         Text(
-                            text = " • $timeAgoOrDate",
+                            text = " • ${post.createdAt}",
                             color = Gray400,
                             fontSize = 14.sp
                         )
@@ -182,7 +182,6 @@ fun DashboardPostCard(
                 }
             )
 
-            // Tags
             if (post.tags.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyRow(
@@ -205,20 +204,15 @@ fun DashboardPostCard(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Divider
             HorizontalDivider(color = Gray600, thickness = 2.dp)
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // Like button
                     Surface(
                         color = if (isLiked) Color(0xFF4D3232) else Color(0xFF222222),
                         shape = RoundedCornerShape(8.dp),
@@ -249,7 +243,6 @@ fun DashboardPostCard(
                         }
                     }
 
-                    // Comment button
                     Surface(
                         color = if (showComments) Color(0xFF22454B) else Color(0xFF222222),
                         shape = RoundedCornerShape(8.dp),
@@ -277,7 +270,6 @@ fun DashboardPostCard(
                         }
                     }
 
-                    // Share button
                     Surface(
                         color = if (isShared) Color(0xFF244541) else Color(0xFF222222),
                         shape = RoundedCornerShape(8.dp),

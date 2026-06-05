@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,7 +36,6 @@ fun PostCommentsSection(
 ) {
     val context = LocalContext.current
     var replyTo by remember { mutableStateOf<PostComment?>(null) }
-
 
     Spacer(modifier = Modifier.height(16.dp))
     Surface(
@@ -70,7 +68,7 @@ fun PostCommentsSection(
                             if (!result) {
                                 Toast.makeText(
                                     context,
-                                    "Someting went wrong.",
+                                    "Something went wrong.",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -85,7 +83,7 @@ fun PostCommentsSection(
                             if (!result) {
                                 Toast.makeText(
                                     context,
-                                    "Someting went wrong.",
+                                    "Something went wrong.",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -117,7 +115,7 @@ fun PostCommentsSection(
             } else {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Brak komentarzy. Bądź pierwszy!",
+                    text = "No comments yet. Be the first!",
                     color = Gray400,
                     fontSize = 14.sp
                 )

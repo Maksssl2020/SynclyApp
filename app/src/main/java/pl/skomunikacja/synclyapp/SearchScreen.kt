@@ -180,7 +180,7 @@ fun SearchScreen(
                 containerColor = Black300,
                 contentColor = White100,
                 indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
+                    TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
                         color = Teal100
                     )
@@ -191,7 +191,7 @@ fun SearchScreen(
                     onClick = { selectedTab = 0 },
                     text = {
                         Text(
-                            "Użytkownicy (${userResults.size})",
+                            "Users (${userResults.size})",
                             color = if (selectedTab == 0) Teal100 else Gray300
                         )
                     }
@@ -201,7 +201,7 @@ fun SearchScreen(
                     onClick = { selectedTab = 1 },
                     text = {
                         Text(
-                            "Tagi (${tagResults.size})",
+                            "Tags (${tagResults.size})",
                             color = if (selectedTab == 1) Teal100 else Gray300
                         )
                     }
@@ -211,7 +211,7 @@ fun SearchScreen(
                     onClick = { selectedTab = 2 },
                     text = {
                         Text(
-                            "Posty (${postResults.size})",
+                            "Posts (${postResults.size})",
                             color = if (selectedTab == 2) Teal100 else Gray300
                         )
                     }

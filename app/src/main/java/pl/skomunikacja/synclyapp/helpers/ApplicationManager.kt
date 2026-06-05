@@ -5,8 +5,10 @@ import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import pl.skomunikacja.synclyapp.model.ApplicationSettings
 import pl.skomunikacja.synclyapp.model.AuthenticationResponse
+import pl.skomunikacja.synclyapp.model.Image
 import pl.skomunikacja.synclyapp.model.PostCollection
 import pl.skomunikacja.synclyapp.model.post.Post
 import java.io.File
@@ -107,6 +109,15 @@ object ApplicationManager {
         return _userPostCollections.value
             .filterNot { it.default }
             .any { collection -> collection.posts.any { it.id == postId } }
+    }
+
+
+    fun changeAvatarInAuthenticationData(avatar: Image?) {
+        _authenticationData.update {
+            it?.copy(
+                avatar = avatar
+            )
+        }
     }
 
     fun logoutUser() {

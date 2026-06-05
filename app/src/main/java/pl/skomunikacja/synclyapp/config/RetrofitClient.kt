@@ -30,7 +30,7 @@ object RetrofitClient {
         .create()
 
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.1.93:8080/")
+        .baseUrl("https://ns31075468.ip-51-77-53.eu:8443/syncly/")
         .addConverterFactory(GsonConverterFactory.create(gson))
         .client(httpClient)
         .build()

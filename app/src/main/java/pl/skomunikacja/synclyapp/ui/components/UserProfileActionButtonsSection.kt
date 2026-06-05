@@ -20,9 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -31,6 +28,7 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.UserMinus
 import compose.icons.fontawesomeicons.solid.UserPlus
+import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.model.UserProfileData
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Black400
@@ -44,14 +42,16 @@ fun ProfileActionButtons(
     userProfile: UserProfileData,
     viewModel: UserProfileViewModel
 ) {
-    val userFollowedUsers by viewModel.userFollowedUsers.collectAsState()
-    val userLikedProfiles by viewModel.userLikedProfilesIds.collectAsState()
+    val authenticatedUserData by ApplicationManager.authenticationData.collectAsState()
 
-    val isFollowed = userFollowedUsers.any { user -> user.profileOwnerId == userProfile.profileOwnerId }
-    val isLiked = userLikedProfiles.contains(userProfile.profileOwnerId)
+    val authenticatedUserFollowedUsers by viewModel.authenticatedUserFollowedUsers.collectAsState()
+    val authenticatedUserLikedProfiles by viewModel.authenticatedUserLikedProfilesIds.collectAsState()
+    val authenticatedUserFriendRequestStatus by viewModel.authenticatedUserFriendStatus.collectAsState()
 
-    var isFollowing by remember { mutableStateOf(false) }
-    var friendStatus by remember { mutableStateOf("none") }
+    val isLiked = authenticatedUserLikedProfiles.contains(userProfile.userProfileId)
+    val isFollowing = authenticatedUserFollowedUsers.any { user ->
+        user.profileOwnerId == userProfile.profileOwnerId
+    }
 
     Row(
         modifier = Modifier
@@ -61,8 +61,13 @@ fun ProfileActionButtons(
     ) {
         Button(
             onClick = {
-                isFollowing = !isFollowing
-                // TODO: Implement follow/unfollow API call
+                val userId = authenticatedUserData?.userId ?: return@Button
+
+                if (isFollowing) {
+                    viewModel.unfollowUser(userProfile.userProfileId, userId)
+                } else{
+                    viewModel.followUser(userProfile.userProfileId, userId)
+                }
             },
             modifier = Modifier
                 .weight(1f),
@@ -72,7 +77,7 @@ fun ProfileActionButtons(
             )
         ) {
             Text(
-                text = if (isFollowing) "Przestań obserwować" else "Obserwuj",
+                text = if (isFollowing) "Unfollow" else "Follow",
                 color = if (isFollowing) White100 else Black400,
                 fontSize = 12.sp
             )
@@ -80,7 +85,13 @@ fun ProfileActionButtons(
 
         IconButton(
             onClick = {
-                // TODO: Implement like/unlike profile API call
+                val userId = authenticatedUserData?.userId ?: return@IconButton
+
+                if (isLiked) {
+                    viewModel.unlikeUserProfile(userId, userProfile.userProfileId)
+                } else {
+                    viewModel.likeUserProfile(userId, userProfile.userProfileId)
+                }
             },
             modifier = Modifier
                 .background(
@@ -91,25 +102,24 @@ fun ProfileActionButtons(
         ) {
             Icon(
                 Icons.Default.Favorite,
-                contentDescription = if (isLiked) "Odlub profil" else "Polub profil",
+                contentDescription = if (isLiked) "Unlike profile" else "Like profile",
                 tint = if (isLiked) Black400 else White100
             )
         }
     }
 
-    // Friend Request Button
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        when (friendStatus) {
+        when (authenticatedUserFriendRequestStatus) {
             "none" -> {
                 Button(
                     onClick = {
-                        friendStatus = "pending"
-                        // TODO: Implement send friend request API call
+                        val userId = authenticatedUserData?.userId ?: return@Button
+                        viewModel.addUserToFriends(userId, userProfile.profileOwnerId)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Black300),
@@ -118,32 +128,32 @@ fun ProfileActionButtons(
                 ) {
                     Icon(
                         FontAwesomeIcons.Solid.UserPlus,
-                        contentDescription = "Dodaj do znajomych",
+                        contentDescription = "Add to friends",
                         tint = Teal100,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Dodaj do znajomych", color = Teal100)
+                    Text("Add to friends", color = Teal100)
                 }
             }
             "pending" -> {
                 Button(
                     onClick = {
-                        friendStatus = "none"
-                        // TODO: Implement cancel friend request API call
+                        val userId = authenticatedUserData?.userId ?: return@Button
+                        viewModel.cancelFriendRequest(userId, userProfile.profileOwnerId)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Gray300),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("Anuluj zaproszenie", color = White100)
+                    Text("Cancel friend request", color = White100)
                 }
             }
             "friends" -> {
                 Button(
                     onClick = {
-                        friendStatus = "none"
-                        // TODO: Implement remove friend API call
+                        val userId = authenticatedUserData?.userId ?: return@Button
+                        viewModel.deleteFriend(userId, userProfile.profileOwnerId)
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red.copy(alpha = 0.8f)),
@@ -151,12 +161,12 @@ fun ProfileActionButtons(
                 ) {
                     Icon(
                         FontAwesomeIcons.Solid.UserMinus,
-                        contentDescription = "Usuń ze znajomych",
+                        contentDescription = "Delete friend",
                         tint = White100,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Usuń ze znajomych", color = White100)
+                    Text("Delete friend", color = White100)
                 }
             }
         }

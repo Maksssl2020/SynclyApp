@@ -29,7 +29,6 @@ class PostDeserializer : JsonDeserializer<Post> {
             PostType.PHOTO -> context.deserialize(json, PhotoPost::class.java)
             PostType.VIDEO -> context.deserialize(json, VideoPost::class.java)
             PostType.LINK -> context.deserialize(json, LinkPost::class.java)
-            else -> throw JsonParseException("Unknown postType: $postType")
         }
     }
 }

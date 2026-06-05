@@ -20,4 +20,10 @@ class ApiLikesHelper(
 
     suspend fun unlikePost(userId: Long, postId: Long): Boolean =
         api.unlikePost(userId, postId).isSuccessful
+
+    suspend fun likeUserProfile(userId: Long, userProfileId: Long): Boolean =
+        api.likeUserProfile(userId, userProfileId).isSuccessful
+
+    suspend fun unlikeUserProfile(userId: Long, userProfileId: Long): Boolean =
+        api.unlikeUserProfile(userId, userProfileId).isSuccessful
 }

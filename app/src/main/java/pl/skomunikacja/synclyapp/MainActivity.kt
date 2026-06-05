@@ -66,13 +66,13 @@ fun AppScreen() {
         ) {
             composable("login") {
                 SignInScreen(
-                    onLoginSuccess = { navController.navigate("home") },
+                    onLoginSuccess = { },
                     onNavigateToRegister = { navController.navigate("register") }
                 )
             }
             composable("register") {
                 SignUpScreen(
-                    onRegisterSuccess = { navController.navigate("home") },
+                    onRegisterSuccess = { },
                     onNavigateToLogin = { navController.navigate("login") }
                 )
             }
@@ -215,6 +215,12 @@ fun MainAppContent(navController: NavHostController) {
             modifier = Modifier.padding(padding)
         ) {
             composable("home") { DashboardScreen(navController) }
+            composable("signIn") {
+                SignInScreen(
+                    onLoginSuccess = { navController.navigate("home") },
+                    onNavigateToRegister = { navController.navigate("register") }
+                )
+            }
             composable("postCollections") { PostCollectionScreen(onCollectionClick = {collection ->
                 navController.navigate("postCollectionDetails/${collection.id}")
             }) }
@@ -230,7 +236,11 @@ fun MainAppContent(navController: NavHostController) {
             }
             composable("friends") { FriendsScreen(navController) }
             composable("search") { SearchScreen() }
-            composable("profile") { ProfileScreen() }
+            composable("profile") { ProfileScreen(
+                onNavigateToSignInScreen = {
+                    navController.navigate("signIn")
+                }
+            ) }
             composable("add_post") {
                 AddPostScreen(
                     onPostCreated = {

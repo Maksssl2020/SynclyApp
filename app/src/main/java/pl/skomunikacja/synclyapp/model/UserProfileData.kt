@@ -13,6 +13,8 @@ data class UserProfileData(
     val profileLikes: Long,
     val followersCount: Int,
     val followingCount: Int,
-    val website: String,
+    val website: String?,
+    val postsCount: Long,
+    val friendsCount: Long,
     val avatar: Image?
 )

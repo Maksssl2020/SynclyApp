@@ -55,7 +55,7 @@ interface ApiPostsService {
     ): List<Post>
 
     @Multipart
-    @POST("/api/v1/posts/android-app/create/{userId}")
+    @POST("api/v1/posts/android-app/create/{userId}")
     suspend fun createPost(
         @Path("userId") userId: Long,
         @Part("data") data: RequestBody,

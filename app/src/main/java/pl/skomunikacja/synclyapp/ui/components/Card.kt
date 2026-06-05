@@ -37,7 +37,7 @@ import pl.skomunikacja.synclyapp.ui.timeAgoOrDate
 fun FriendCard(
     friend: FriendUserData,
     onAvatarClick: () -> Unit = {},
-    onMessageClick: () -> Unit = {},
+    onCardClick: () -> Unit = {},
     onMoreClick: () -> Unit = {}
 ) {
     Card(
@@ -45,7 +45,8 @@ fun FriendCard(
         colors = CardDefaults.cardColors(
             containerColor = Black200
         ),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        onClick = onCardClick
     ) {
         Row(
             modifier = Modifier
@@ -53,7 +54,6 @@ fun FriendCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar
             Box(
                 modifier = Modifier
                     .size(56.dp)

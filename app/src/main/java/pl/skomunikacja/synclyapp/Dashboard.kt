@@ -86,7 +86,6 @@ fun DashboardScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             ) {
-                // For You Tab
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -122,7 +121,6 @@ fun DashboardScreen(
                     }
                 }
 
-                // Following Tab
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -178,7 +176,6 @@ fun DashboardScreen(
                 }
             }
 
-            // Loading indicator for infinite scroll
             item {
                 if (posts.isNotEmpty()) {
                     Box(

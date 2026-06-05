@@ -40,14 +40,19 @@ import pl.skomunikacja.synclyapp.ui.theme.White100
 
 @Composable
 fun CommentInput(
+    modifier: Modifier = Modifier,
     onSendComment: (String) -> Unit,
-    placeholder: String = "Napisz komentarz...",
+    placeholder: String = "Write a comment...",
     replyingTo: String? = null,
     onCancelReply: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     val authenticationData by ApplicationManager.authenticationData.collectAsState()
     var commentText by remember { mutableStateOf("") }
+
+    println(authenticationData)
+    println(authenticationData)
+    println(authenticationData)
+
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (replyingTo != null) {
@@ -63,7 +68,7 @@ fun CommentInput(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Odpowiadasz $replyingTo",
+                    text = "Replying to $replyingTo",
                     color = Teal100,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -103,7 +108,6 @@ fun CommentInput(
                     .background(Teal100),
             )
 
-            // Comment input
             Row(
                 modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -24,4 +24,22 @@ class ApiFriendsHelper(
 
     suspend fun deleteSentFriendRequest(receiverId: Long, userId: Long): Boolean =
         api.deleteSentFriendRequest(receiverId, userId).isSuccessful
+
+    suspend fun sendFriendRequest(requesterId: Long, receiverId: Long): Boolean =
+        api.sendFriendRequest(requesterId, receiverId).isSuccessful
+
+    suspend fun deleteFriends(userId: Long, friendId: Long): Boolean =
+        api.sendFriendRequest(userId, friendId).isSuccessful
+
+    suspend fun getFriendRequestStatus(requesterId: Long, receiverId: Long): String? {
+        return try {
+            val response = api.getFriendRequestStatus(requesterId, receiverId)
+            response.isSuccessful
+            response.body()
+        } catch (ex: Exception) {
+            println("Failed to get friend request status: ${ex.message}")
+            "none"
+        }
+    }
+
 }

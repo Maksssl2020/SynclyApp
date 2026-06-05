@@ -46,9 +46,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.model.PostCollection
+import pl.skomunikacja.synclyapp.model.UserProfileData
 import pl.skomunikacja.synclyapp.model.post.Post
 import pl.skomunikacja.synclyapp.model.post.SharedPost
-import pl.skomunikacja.synclyapp.model.UserProfileData
 import pl.skomunikacja.synclyapp.ui.components.DashboardPostCard
 import pl.skomunikacja.synclyapp.ui.components.ProfileActionButtons
 import pl.skomunikacja.synclyapp.ui.components.ProfileAvatar
@@ -77,16 +77,15 @@ fun UserProfileScreen(
 
 
     LaunchedEffect(userId) {
-        viewModel.loadUserData(userId)
+        viewModel.loadUserProfileData(userId)
     }
 
     LaunchedEffect(authenticationData != null) {
-        viewModel.loadAuthenticatedUserData(authenticationData!!.userId)
+        viewModel.loadAuthenticatedUserData(authenticationData!!.userId, userId)
     }
 
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Posty", "Udostępnione")
-
+    val tabs = listOf("Posts", "Shared")
 
     when {
         isLoading -> FullScreenLoading()
@@ -141,7 +140,7 @@ fun ProfileContent(
                 containerColor = Black300,
                 contentColor = White100,
                 indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
+                    TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
                         color = Teal100
                     )
@@ -255,12 +254,14 @@ fun ProfileHeader(
             modifier = Modifier.padding(top = 4.dp)
         )
 
-        Text(
-            text = "🌐 ${userProfile.website}",
-            fontSize = 14.sp,
-            color = Teal100,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+        if (userProfile.website != null) {
+            Text(
+                text = "🌐 ${userProfile.website}",
+                fontSize = 14.sp,
+                color = Teal100,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
 
         Row(
             modifier = Modifier
@@ -268,10 +269,10 @@ fun ProfileHeader(
                 .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            ProfileStatCard("Posty", userProfile.followersCount.toString())
-            ProfileStatCard("Obserwujący", userProfile.followersCount.toString())
-            ProfileStatCard("Obserwowani", userProfile.followingCount.toString())
-            ProfileStatCard("Polubienia", userProfile.profileLikes.toString())
+            ProfileStatCard("Posts", userProfile.followersCount.toString())
+            ProfileStatCard("Followers", userProfile.followersCount.toString())
+            ProfileStatCard("Following", userProfile.followingCount.toString())
+            ProfileStatCard("Profile Likes", userProfile.profileLikes.toString())
         }
 
 
@@ -309,7 +310,7 @@ fun SharedPostCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "${sharedPost.sharedBy.userProfile.displayName} udostępnił(a)",
+                    text = "${sharedPost.sharedBy.userProfile.displayName} shared",
                     color = Gray300,
                     fontSize = 14.sp
                 )

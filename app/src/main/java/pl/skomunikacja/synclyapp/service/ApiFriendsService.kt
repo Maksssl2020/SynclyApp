@@ -25,9 +25,21 @@ interface ApiFriendsService {
         @Query("userId") userId: Long
     ): List<FriendRequestData>
 
+    @GET("api/v1/friends/android-app/request/status")
+    suspend fun getFriendRequestStatus(
+        @Query("requesterId") requesterId: Long,
+        @Query("receiverId") receiverId: Long
+    ): Response<String>
+
     @POST("api/v1/friends/accept/request")
     suspend fun acceptFriendRequest(
         @Query("requestId") requestId: Long
+    ): Response<Unit>
+
+    @POST("api/v1/friends/android-app/send/request")
+    suspend fun sendFriendRequest(
+        @Query("requesterId") requesterId: Long,
+        @Query("receiverId") receiverId: Long
     ): Response<Unit>
 
     @DELETE("api/v1/friends/decline/request")
@@ -39,5 +51,11 @@ interface ApiFriendsService {
     suspend fun deleteSentFriendRequest(
         @Path("receiverId") receiverId: Long,
         @Query("userId") userId: Long
+    ): Response<Unit>
+
+    @DELETE(value = "api/v1/friends/remove/friend")
+    suspend fun deleteFriend(
+        @Path("userId") userId: Long,
+        @Query("friendId") friendId: Long
     ): Response<Unit>
 }
