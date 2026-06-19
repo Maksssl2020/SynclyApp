@@ -29,12 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.FastForward
 import compose.icons.fontawesomeicons.solid.ObjectGroup
+import compose.icons.fontawesomeicons.solid.User
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.model.DashboardTab
 import pl.skomunikacja.synclyapp.ui.components.DashboardPostCard
@@ -50,26 +52,48 @@ fun DashboardScreen(
     navController: NavHostController,
     dashboardViewModel: DashboardViewModel = viewModel(),
 ) {
-    val authenticationData by ApplicationManager.authenticationData.collectAsState()
-    val userPostCollections by ApplicationManager.userPostCollections.collectAsState()
-    val activeTab by dashboardViewModel.activeTab.collectAsState()
-    val forYouPosts by dashboardViewModel.dashboardForYouPosts.collectAsState()
-    val followedPosts by dashboardViewModel.dashboardFollowedPosts.collectAsState()
+    val authenticationData by ApplicationManager.authenticationData.collectAsStateWithLifecycle()
+    val userPostCollections by ApplicationManager.userPostCollections.collectAsStateWithLifecycle()
+    val activeTab by dashboardViewModel.activeTab.collectAsStateWithLifecycle()
+    val forYouPosts by dashboardViewModel.dashboardForYouPosts.collectAsStateWithLifecycle()
+    val followedPosts by dashboardViewModel.dashboardFollowedPosts.collectAsStateWithLifecycle()
+    val dashboardUserPosts by dashboardViewModel.dashboardUserPosts.collectAsStateWithLifecycle()
+    val isLoading by dashboardViewModel.isLoading.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
 
-    val posts = if (activeTab == DashboardTab.FOR_YOU) forYouPosts else followedPosts
+    val posts = if (activeTab == DashboardTab.FOR_YOU) forYouPosts else if (activeTab == DashboardTab.FOLLOWED) followedPosts else  dashboardUserPosts
 
-    LaunchedEffect(authenticationData != null && userPostCollections.isEmpty()) {
-        dashboardViewModel.fetchUserPostCollections(authenticationData!!.userId)
+    LaunchedEffect(authenticationData?.userId, userPostCollections.isEmpty()) {
+        val userId = authenticationData?.userId ?: return@LaunchedEffect
+
+        if (userPostCollections.isEmpty()) {
+            dashboardViewModel.fetchUserPostCollections(userId)
+        }
     }
 
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex to listState.layoutInfo.totalItemsCount }
-            .collect { (firstVisible, totalItems) ->
-                if (firstVisible + 5 >= totalItems) { // kiedy jesteśmy 5 elementów od końca
-                    authenticationData?.userId?.let { dashboardViewModel.loadDashboardPosts(it) }
+    LaunchedEffect(activeTab, authenticationData?.userId) {
+        val userId = authenticationData?.userId ?: return@LaunchedEffect
+        dashboardViewModel.loadDashboardPosts(userId)
+    }
+
+    LaunchedEffect(listState, activeTab) {
+        snapshotFlow {
+            val lastVisibleItemIndex = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val totalItemsCount = listState.layoutInfo.totalItemsCount
+
+            lastVisibleItemIndex to totalItemsCount
+        }.collect { (lastVisible, totalItems) ->
+            if (activeTab == DashboardTab.USER) return@collect
+            if (totalItems == 0) return@collect
+
+            val shouldLoadMore = lastVisible >= totalItems - 3
+
+            if (shouldLoadMore) {
+                authenticationData?.userId?.let { userId ->
+                    dashboardViewModel.loadDashboardPosts(userId)
                 }
             }
+        }
     }
 
     Column(
@@ -155,6 +179,41 @@ fun DashboardScreen(
                         )
                     }
                 }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { dashboardViewModel.switchTab(DashboardTab.USER) }
+                        .padding(vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            FontAwesomeIcons.Solid.User,
+                            contentDescription = "Yours",
+                            tint = if (activeTab == DashboardTab.USER) White100 else Gray400,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Yours",
+                            color = if (activeTab == DashboardTab.USER) White100 else Gray400,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    if (activeTab == DashboardTab.USER) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(2.dp)
+                                .background(Teal100)
+                        )
+                    }
+                }
             }
         }
 
@@ -177,7 +236,7 @@ fun DashboardScreen(
             }
 
             item {
-                if (posts.isNotEmpty()) {
+                if (isLoading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()

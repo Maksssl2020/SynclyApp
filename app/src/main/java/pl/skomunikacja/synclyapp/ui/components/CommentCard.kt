@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +37,6 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Expand
 import compose.icons.fontawesomeicons.solid.ExpandAlt
-import compose.icons.fontawesomeicons.solid.Minus
 import compose.icons.fontawesomeicons.solid.Reply
 import pl.skomunikacja.synclyapp.model.PostComment
 import pl.skomunikacja.synclyapp.ui.theme.Black200
@@ -48,8 +45,6 @@ import pl.skomunikacja.synclyapp.ui.theme.Gray600
 import pl.skomunikacja.synclyapp.ui.theme.Red100
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
 import pl.skomunikacja.synclyapp.ui.theme.White100
-import pl.skomunikacja.synclyapp.ui.timeAgoOrDate
-import pl.skomunikacja.synclyapp.view_model.CommentViewModel
 
 @Composable
 fun CommentCard(
@@ -58,13 +53,11 @@ fun CommentCard(
     currentUserId: Long = 1L,
     onLikeClick: (Long) -> Unit = {},
     onReplyClick: (PostComment) -> Unit = {},
+    onAuthorClick: (Long) -> Unit = {}
 ) {
     var showReplies by remember { mutableStateOf(false) }
-    val viewModel = remember(comment.id) { CommentViewModel(comment) }
-    val state by viewModel.comment.collectAsState()
-
-    val isLiked = state.likesBy.contains(currentUserId)
-    val likesCount = state.likesBy.size
+    val isLiked = comment.likesBy.contains(currentUserId)
+    val likesCount = comment.likesBy.size
 
     Column(modifier = modifier) {
         Row(
@@ -73,7 +66,9 @@ fun CommentCard(
             verticalAlignment = Alignment.Top
         ) {
             ProfileAvatar(
-                onAvatarClick = {},
+                onAvatarClick = {
+                    onAuthorClick(comment.authorId)
+                },
                 base64Image = comment.authorImage?.imageData,
                 initials = comment.authorName.first().toString(),
                 modifier = Modifier
@@ -111,13 +106,11 @@ fun CommentCard(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Action row
                 Row(
                     modifier = Modifier.padding(start = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Like
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -140,7 +133,6 @@ fun CommentCard(
                         }
                     }
 
-                    // Reply
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),

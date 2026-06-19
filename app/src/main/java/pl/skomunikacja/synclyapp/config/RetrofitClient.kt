@@ -11,6 +11,7 @@ import pl.skomunikacja.synclyapp.service.ApiFriendsService
 import pl.skomunikacja.synclyapp.service.ApiLikesService
 import pl.skomunikacja.synclyapp.service.ApiPostCollectionsService
 import pl.skomunikacja.synclyapp.service.ApiPostsService
+import pl.skomunikacja.synclyapp.service.ApiReportService
 import pl.skomunikacja.synclyapp.service.ApiTagsService
 import pl.skomunikacja.synclyapp.service.ApiUsersService
 import retrofit2.Retrofit
@@ -43,4 +44,5 @@ object RetrofitClient {
     val apiCommentsService: ApiCommentsService = retrofit.create(ApiCommentsService::class.java)
     val apiPostCollectionsService: ApiPostCollectionsService = retrofit.create(ApiPostCollectionsService::class.java)
     val apiFriendsService: ApiFriendsService = retrofit.create(ApiFriendsService::class.java)
+    val apiReportsService: ApiReportService = retrofit.create(ApiReportService::class.java)
 }

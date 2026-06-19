@@ -5,10 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pl.skomunikacja.synclyapp.config.RetrofitClient
 import pl.skomunikacja.synclyapp.helpers.ApiCommentsHelper
 import pl.skomunikacja.synclyapp.helpers.ApiLikesHelper
+import pl.skomunikacja.synclyapp.helpers.ApiPostCollectionsHelper
 import pl.skomunikacja.synclyapp.helpers.ApiPostsHelper
 import pl.skomunikacja.synclyapp.model.CommentReplyRequest
 import pl.skomunikacja.synclyapp.model.CommentRequest
@@ -20,6 +22,7 @@ class PostViewModel(initialPost: Post) : ViewModel() {
     private val apiPostsHelper = ApiPostsHelper(RetrofitClient.apiPostsService)
     private val apiCommentsHelper = ApiCommentsHelper(RetrofitClient.apiCommentsService)
     private val apiLikesHelper = ApiLikesHelper(RetrofitClient.apiLikesService)
+    private val apiPostCollectionHelper = ApiPostCollectionsHelper(RetrofitClient.apiPostCollectionsService)
 
     private val _post = MutableStateFlow(initialPost)
     val post = _post.asStateFlow()
@@ -41,7 +44,7 @@ class PostViewModel(initialPost: Post) : ViewModel() {
         viewModelScope.launch {
             val response = apiCommentsHelper.addCommentToPost(request)
             if (response.isSuccessful && response.body() != null) {
-                _postComments.value = _postComments.value + response.body()!!
+                _postComments.value += response.body()!!
                 post.value.copyWith(
                     commentsCount = post.value.commentsCount + 1
                 )
@@ -81,6 +84,77 @@ class PostViewModel(initialPost: Post) : ViewModel() {
         }
     }
 
+    fun likeUnlikePostComment(userId: Long, commentId: Long) {
+        viewModelScope.launch {
+            val foundComment = findCommentById(_postComments.value, commentId) ?: return@launch
+
+            val isLikedByUser = foundComment.likesBy.contains(userId)
+
+            val result: Boolean = if (isLikedByUser) {
+                apiLikesHelper.unlikeComment(userId, commentId)
+            } else {
+                apiLikesHelper.likeComment(userId, commentId)
+            }
+
+            if (result) {
+                _postComments.update { comments ->
+                    updateCommentLikeRecursively(
+                        comments = comments,
+                        commentId = commentId,
+                        userId = userId,
+                        wasLiked = isLikedByUser
+                    )
+                }
+            }
+        }
+    }
+
+    private fun findCommentById(
+        comments: List<PostComment>,
+        commentId: Long
+    ): PostComment? {
+        comments.forEach { comment ->
+            if (comment.id == commentId) {
+                return comment
+            }
+
+            val foundReply = findCommentById(comment.replies, commentId)
+            if (foundReply != null) {
+                return foundReply
+            }
+        }
+
+        return null
+    }
+
+    private fun updateCommentLikeRecursively(
+        comments: List<PostComment>,
+        commentId: Long,
+        userId: Long,
+        wasLiked: Boolean
+    ): List<PostComment> {
+        return comments.map { comment ->
+            if (comment.id == commentId) {
+                comment.copy(
+                    likesBy = if (wasLiked) {
+                        comment.likesBy - userId
+                    } else {
+                        comment.likesBy + userId
+                    }
+                )
+            } else {
+                comment.copy(
+                    replies = updateCommentLikeRecursively(
+                        comments = comment.replies,
+                        commentId = commentId,
+                        userId = userId,
+                        wasLiked = wasLiked
+                    )
+                )
+            }
+        }
+    }
+
     fun toggleAction(userId: Long, action: PostActionType) {
         viewModelScope.launch {
             val currentPost = _post.value
@@ -99,7 +173,7 @@ class PostViewModel(initialPost: Post) : ViewModel() {
 
                     PostActionType.SAVE ->
                         TODO()
-//                        if (isActive) apiHelper.unsavePost(currentPost.id.toLong())
+//                        if (isActive) apiPostCollectionHelper.unsavePostFromCollection(currentPost.id.toLong())
 //                        else apiHelper.savePost(currentPost.id.toLong())
 
                     PostActionType.SHARE ->

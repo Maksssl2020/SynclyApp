@@ -15,7 +15,7 @@ class LinkPost(
     sharedBy: List<Long>,
     commentsCount: Int,
     authorAvatar: Image?,
-    @SerializedName("title") val title: String,
+    @SerializedName("title") val title: String?,
     @SerializedName("description") val description: String,
     @SerializedName("urls") val urls: List<String>
 ) : Post(

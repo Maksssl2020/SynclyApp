@@ -1,6 +1,7 @@
 package pl.skomunikacja.synclyapp.helpers
 
 import pl.skomunikacja.synclyapp.model.FriendRequestData
+import pl.skomunikacja.synclyapp.model.FriendStatus
 import pl.skomunikacja.synclyapp.model.FriendUserData
 import pl.skomunikacja.synclyapp.service.ApiFriendsService
 
@@ -31,14 +32,14 @@ class ApiFriendsHelper(
     suspend fun deleteFriends(userId: Long, friendId: Long): Boolean =
         api.sendFriendRequest(userId, friendId).isSuccessful
 
-    suspend fun getFriendRequestStatus(requesterId: Long, receiverId: Long): String? {
+    suspend fun getFriendRequestStatus(requesterId: Long, receiverId: Long): FriendStatus? {
         return try {
             val response = api.getFriendRequestStatus(requesterId, receiverId)
             response.isSuccessful
             response.body()
         } catch (ex: Exception) {
             println("Failed to get friend request status: ${ex.message}")
-            "none"
+            FriendStatus.NONE
         }
     }
 

@@ -93,7 +93,7 @@ fun CollectionCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "${collection.posts.size} postów",
+                text = "${collection.posts.size} posts",
                 color = White100.copy(alpha = 0.7f),
                 fontSize = 14.sp
             )

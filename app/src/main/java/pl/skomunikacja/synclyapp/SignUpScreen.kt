@@ -106,7 +106,6 @@ fun SignUpScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // First Name Field
         OutlinedTextField(
             value = firstName,
             onValueChange = { firstName = it },
@@ -134,7 +133,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Last Name Field
         OutlinedTextField(
             value = lastName,
             onValueChange = { lastName = it },
@@ -162,7 +160,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Username Field
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
@@ -190,7 +187,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Email Field
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -219,7 +215,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Password Field
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -259,7 +254,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Confirm Password Field
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
@@ -311,7 +305,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Register Button
         Button(
             onClick = {
                 handleSignUp(

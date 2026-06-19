@@ -8,11 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import pl.skomunikacja.synclyapp.ui.rememberBase64Image
+import pl.skomunikacja.synclyapp.helpers.Utils.rememberBase64Image
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
 
@@ -25,10 +24,7 @@ fun ProfileAvatar(
 ) {
     val imageBitmap = rememberBase64Image(base64Image)
 
-    println("imageBitmap: " + imageBitmap)
-    println("imageBitmap: " + imageBitmap)
-    println("imageBitmap: " + imageBitmap)
-    println("imageBitmap: " + imageBitmap)
+
     println("imageBitmap: " + imageBitmap)
     println("imageBitmap:" )
     println("base64Image: $base64Image" )

@@ -1,8 +1,13 @@
 package pl.skomunikacja.synclyapp.ui.components
 
+import android.content.Intent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,26 +17,40 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.Link
+import pl.skomunikacja.synclyapp.helpers.Utils.timeAgoOrDate
+import pl.skomunikacja.synclyapp.model.FriendRequestData
 import pl.skomunikacja.synclyapp.model.FriendUserData
 import pl.skomunikacja.synclyapp.ui.theme.Black200
+import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Gray300
 import pl.skomunikacja.synclyapp.ui.theme.Red100
+import pl.skomunikacja.synclyapp.ui.theme.Red200
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
 import pl.skomunikacja.synclyapp.ui.theme.White100
-import pl.skomunikacja.synclyapp.ui.timeAgoOrDate
 
 @Composable
 fun FriendCard(
@@ -94,7 +113,7 @@ fun FriendCard(
                 )
                 if (friend.mutualFriendsCount != null && friend.mutualFriendsCount > 0) {
                     Text(
-                        text = "${friend.mutualFriendsCount} wspólnych znajomych",
+                        text = "${friend.mutualFriendsCount} mutual friends",
                         color = Teal100,
                         fontSize = 12.sp
                     )
@@ -115,12 +134,11 @@ fun FriendCard(
                 IconButton(onClick = onMoreClick) {
                     Icon(
                         Icons.Default.MoreVert,
-                        contentDescription = "Więcej opcji",
+                        contentDescription = "More options",
                         tint = Gray300
                     )
                 }
 
-                // Status indicator
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -140,8 +158,8 @@ fun FriendCard(
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = when (friend.user.status) {
-                            "BLOCKED" -> "Zablokowany"
-                            "INACTIVE" -> "Nieaktywny"
+                            "BLOCKED" -> "Blocked"
+                            "INACTIVE" -> "Inactive"
                             "ACTIVE" -> "Online"
                             else -> timeAgoOrDate(friend.user.lastActive)
                         },
@@ -178,3 +196,152 @@ fun ProfileStatCard(label: String, value: String) {
     }
 }
 
+
+@Composable
+fun FriendRequestCard(
+    friendRequest: FriendRequestData,
+    isOutgoing: Boolean = false,
+    onAccept: ((requestId: Long) -> Unit)? = null,
+    onReject: ((requestId: Long) -> Unit)? = null,
+    onRemoveFriendRequest: ((receiverId: Long) -> Unit)? = null
+) {
+    val user = if (isOutgoing) friendRequest.receiver else friendRequest.requester
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Black300),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(Gray300),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = user.userProfile.displayName.first().toString(),
+                    color = White100,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = user.userProfile.displayName,
+                    color = White100,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "@${user.username}",
+                    color = Gray300,
+                    fontSize = 14.sp
+                )
+                Text(
+                    text = timeAgoOrDate(friendRequest.createdAt),
+                    color = Gray300,
+                    fontSize = 12.sp
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (isOutgoing) {
+                    Button(
+                        onClick = { onRemoveFriendRequest?.invoke(friendRequest.receiver.userId) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Red200),
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Cancel",
+                            tint = White100,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                } else {
+                    Button(
+                        onClick = { onAccept?.invoke(friendRequest.id) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Teal100),
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = "Accept",
+                            tint = White100,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Button(
+                        onClick = { onReject?.invoke(friendRequest.id) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Red200),
+                        modifier = Modifier.size(40.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Decline",
+                            tint = White100,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun YoutubeLinkCard(url: String) {
+    val context = LocalContext.current
+
+    Surface(
+        color = Black300,
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, Teal100),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                context.startActivity(intent)
+            }
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                FontAwesomeIcons.Solid.Link,
+                contentDescription = "YouTube",
+                tint = Teal100,
+                modifier = Modifier.size(20.dp)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                text = "Open video on youtube",
+                color = Teal100,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}

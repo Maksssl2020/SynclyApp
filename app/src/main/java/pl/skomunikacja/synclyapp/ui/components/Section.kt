@@ -32,7 +32,8 @@ fun PostCommentsSection(
     postId: Long,
     viewModel: PostViewModel,
     currentUserId: Long,
-    comments: List<PostComment>
+    comments: List<PostComment>,
+    onAuthorClick: (Long) -> Unit,
 ) {
     val context = LocalContext.current
     var replyTo by remember { mutableStateOf<PostComment?>(null) }
@@ -103,11 +104,13 @@ fun PostCommentsSection(
                             comment = comment,
                             currentUserId = currentUserId,
                             onLikeClick = { commentId ->
-                                // TODO: Handle comment like
-                                println("Liked comment: $commentId")
+                                viewModel.likeUnlikePostComment(currentUserId, commentId)
                             },
                             onReplyClick = {
                                 replyTo = it
+                            },
+                            onAuthorClick = {
+                                onAuthorClick(it)
                             }
                         )
                     }

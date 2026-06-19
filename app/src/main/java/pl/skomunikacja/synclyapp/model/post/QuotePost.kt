@@ -17,7 +17,7 @@ class QuotePost(
     commentsCount: Int,
     authorAvatar: Image?,
     @SerializedName("quote") val quote: String,
-    @SerializedName("source") val source: String
+    @SerializedName("source") val source: String?
 ) : Post(
     id, createdAt, updatedAt, PostType.QUOTE,
     authorId, authorName, authorUsername,

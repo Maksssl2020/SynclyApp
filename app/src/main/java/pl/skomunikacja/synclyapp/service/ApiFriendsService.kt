@@ -1,6 +1,7 @@
 package pl.skomunikacja.synclyapp.service
 
 import pl.skomunikacja.synclyapp.model.FriendRequestData
+import pl.skomunikacja.synclyapp.model.FriendStatus
 import pl.skomunikacja.synclyapp.model.FriendUserData
 import retrofit2.Response
 import retrofit2.http.DELETE
@@ -29,7 +30,7 @@ interface ApiFriendsService {
     suspend fun getFriendRequestStatus(
         @Query("requesterId") requesterId: Long,
         @Query("receiverId") receiverId: Long
-    ): Response<String>
+    ): Response<FriendStatus>
 
     @POST("api/v1/friends/accept/request")
     suspend fun acceptFriendRequest(

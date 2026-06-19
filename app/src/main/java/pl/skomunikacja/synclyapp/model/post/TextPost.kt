@@ -16,7 +16,7 @@ class TextPost(
     sharedBy: List<Long>,
     commentsCount: Int,
     authorAvatar: Image?,
-    @SerializedName("title") val title: String,
+    @SerializedName("title") val title: String?,
     @SerializedName("content") val content: String
 ) : Post(
     id, createdAt, updatedAt, PostType.TEXT,

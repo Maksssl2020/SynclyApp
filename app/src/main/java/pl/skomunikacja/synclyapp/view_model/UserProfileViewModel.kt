@@ -14,6 +14,7 @@ import pl.skomunikacja.synclyapp.helpers.ApiFriendsHelper
 import pl.skomunikacja.synclyapp.helpers.ApiLikesHelper
 import pl.skomunikacja.synclyapp.helpers.ApiPostsHelper
 import pl.skomunikacja.synclyapp.helpers.ApiUsersHelper
+import pl.skomunikacja.synclyapp.model.FriendStatus
 import pl.skomunikacja.synclyapp.model.UserProfileData
 import pl.skomunikacja.synclyapp.model.post.Post
 
@@ -33,19 +34,23 @@ class UserProfileViewModel : ViewModel() {
     private val _authenticatedUserLikedProfilesIds = MutableStateFlow(emptyList<Long>())
     val authenticatedUserLikedProfilesIds = _authenticatedUserLikedProfilesIds.asStateFlow()
 
-    private val _authenticatedUserFriendStatus = MutableStateFlow("none")
+    private val _authenticatedUserFriendStatus = MutableStateFlow(FriendStatus.NONE)
     val authenticatedUserFriendStatus = _authenticatedUserFriendStatus.asStateFlow()
 
     private val _userProfilePosts = MutableStateFlow<List<Post>>(emptyList())
     val userProfilePosts = _userProfilePosts.asStateFlow()
 
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
+
+    private val _isActionLoading = MutableStateFlow(false)
+    val isActionLoading = _isActionLoading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
 
-    fun loadUserProfileData(userId: Long) {
+    fun loadUserPosts(userId: Long) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
@@ -65,6 +70,80 @@ class UserProfileViewModel : ViewModel() {
         }
     }
 
+    fun loadProfileScreen(
+        profileOwnerId: Long,
+        authenticatedUserId: Long?
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+
+            _userProfile.value = null
+            _userProfilePosts.value = emptyList()
+
+            try {
+                val profileDeferred = async {
+                    apiUsersHelper.getUserProfile(profileOwnerId)
+                }
+
+                val postsDeferred = async {
+                    apiPostsHelper.getUserPosts(profileOwnerId)
+                }
+
+                val followedUsersDeferred = if (
+                    authenticatedUserId != null && authenticatedUserId != profileOwnerId
+                ) {
+                    async {
+                        apiFollowsHelper.getFollowedUsersByUserId(authenticatedUserId)
+                    }
+                } else {
+                    null
+                }
+
+                val likedProfilesDeferred = if (
+                    authenticatedUserId != null && authenticatedUserId != profileOwnerId
+                ) {
+                    async {
+                        apiLikesHelper.getUserLikedProfilesIds(authenticatedUserId)
+                    }
+                } else {
+                    null
+                }
+
+                val friendStatusDeferred = if (
+                    authenticatedUserId != null && authenticatedUserId != profileOwnerId
+                ) {
+                    async {
+                        apiFriendsHelper.getFriendRequestStatus(
+                            authenticatedUserId,
+                            profileOwnerId
+                        )
+                    }
+                } else {
+                    null
+                }
+
+                _userProfile.value = profileDeferred.await()
+                _userProfilePosts.value = postsDeferred.await()
+
+                _authenticatedUserFollowedUsers.value =
+                    followedUsersDeferred?.await() ?: emptyList()
+
+                _authenticatedUserLikedProfilesIds.value =
+                    likedProfilesDeferred?.await() ?: emptyList()
+
+                _authenticatedUserFriendStatus.value =
+                    friendStatusDeferred?.await() ?: FriendStatus.NONE
+
+            } catch (e: Exception) {
+                _error.value = "Failed to load profile: ${e.message}"
+                Log.e("UserProfileVM", "Error loading profile screen", e)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun loadAuthenticatedUserData(userId: Long, userProfileOwnerId: Long) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -77,7 +156,7 @@ class UserProfileViewModel : ViewModel() {
 
                 _authenticatedUserFollowedUsers.value = followedUsersByUserId
                 _authenticatedUserLikedProfilesIds.value = userLikedProfiles
-                _authenticatedUserFriendStatus.value = friendRequestStatus ?: "none"
+                _authenticatedUserFriendStatus.value = friendRequestStatus ?: FriendStatus.NONE
             } finally {
                 _isLoading.value = false
             }
@@ -86,7 +165,7 @@ class UserProfileViewModel : ViewModel() {
 
     fun followUser(userProfileId: Long, userId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isActionLoading.value = true
 
             try {
                val responseData = apiFollowsHelper.followUser(userProfileId, userId)
@@ -110,14 +189,14 @@ class UserProfileViewModel : ViewModel() {
                _error.value = "Failed to follow user: ${ex.message}"
                Log.e("UserProfileVM", "Error loading data", ex)
            }finally {
-               _isLoading.value = false
+                _isActionLoading.value = false
            }
         }
     }
 
     fun unfollowUser(userProfileId: Long, userId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isActionLoading.value = true
 
             try {
                 val responseData = apiFollowsHelper.unfollowUser(userProfileId, userId)
@@ -139,14 +218,14 @@ class UserProfileViewModel : ViewModel() {
                 _error.value = "Failed to follow user: ${ex.message}"
                 Log.e("UserProfileVM", "Error loading data", ex)
             }finally {
-                _isLoading.value = false
+                _isActionLoading.value = false
             }
         }
     }
 
     fun likeUserProfile(userId: Long, userProfileId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isActionLoading.value = true
 
             try {
                 val isSuccess = apiLikesHelper.likeUserProfile(userId, userProfileId)
@@ -170,14 +249,14 @@ class UserProfileViewModel : ViewModel() {
                 _error.value = "Failed to like user profile: ${ex.message}"
                 Log.e("UserProfileVM", "Error loading data", ex)
             }finally {
-                _isLoading.value = false
+                _isActionLoading.value = false
             }
         }
     }
 
     fun unlikeUserProfile(userId: Long, userProfileId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isActionLoading.value = true
 
             try {
                 val isSuccess = apiLikesHelper.unlikeUserProfile(userId, userProfileId)
@@ -197,66 +276,66 @@ class UserProfileViewModel : ViewModel() {
                 _error.value = "Failed to unlike user profile: ${ex.message}"
                 Log.e("UserProfileVM", "Error loading data", ex)
             }finally {
-                _isLoading.value = false
+                _isActionLoading.value = false
             }
         }
     }
 
     fun addUserToFriends(requesterId: Long, receiverId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isActionLoading.value = true
 
             try {
                 val isSuccess = apiFriendsHelper.sendFriendRequest(requesterId, receiverId)
 
                 if (isSuccess) {
-                    _authenticatedUserFriendStatus.value = "pending"
+                    _authenticatedUserFriendStatus.value = FriendStatus.PENDING
                 }
             } catch (ex: Exception) {
                 _error.value = "Failed to add user to friends: ${ex.message}"
                 Log.e("UserProfileVM", "Error loading data", ex)
             } finally {
-                _isLoading.value = false
+                _isActionLoading.value = false
             }
         }
     }
 
     fun cancelFriendRequest(requesterId: Long, receiverId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isActionLoading.value = true
 
             try {
                 val isSuccess =
                     apiFriendsHelper.deleteSentFriendRequest(requesterId, receiverId)
 
                 if (isSuccess) {
-                    _authenticatedUserFriendStatus.value = "none"
+                    _authenticatedUserFriendStatus.value = FriendStatus.NONE
                 }
             } catch (ex: Exception) {
                 _error.value = "Failed to delete friend request: ${ex.message}"
                 Log.e("UserProfileVM", "Error loading data", ex)
             } finally {
-                _isLoading.value = false
+                _isActionLoading.value = false
             }
         }
     }
 
     fun deleteFriend(userId: Long, friendId: Long) {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isActionLoading.value = true
 
             try {
                 val isSuccess =
                     apiFriendsHelper.deleteFriends(userId, friendId)
 
                 if (isSuccess) {
-                    _authenticatedUserFriendStatus.value = "none"
+                    _authenticatedUserFriendStatus.value = FriendStatus.NONE
                 }
             } catch (ex: Exception) {
                 _error.value = "Failed to delete friend: ${ex.message}"
                 Log.e("UserProfileVM", "Error loading data", ex)
             } finally {
-                _isLoading.value = false
+                _isActionLoading.value = false
             }
         }
     }

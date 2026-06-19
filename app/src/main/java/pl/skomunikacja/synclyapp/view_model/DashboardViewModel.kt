@@ -28,39 +28,91 @@ class DashboardViewModel  : ViewModel() {
     private val _dashboardFollowedPosts = MutableStateFlow<List<Post>>(emptyList())
     val dashboardFollowedPosts = _dashboardFollowedPosts.asStateFlow()
 
+    private val _dashboardUserPosts = MutableStateFlow<List<Post>>(emptyList())
+    val dashboardUserPosts = _dashboardUserPosts.asStateFlow()
 
-    private var isLoading = false
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
     private var endReachedForYou = false
     private var endReachedFollowing = false
+    private var userPostsLoaded = false
 
     fun loadDashboardPosts(userId: Long) {
         viewModelScope.launch {
-            if (isLoading) return@launch
-            isLoading = true
+            if (_isLoading.value) return@launch
 
-            try {
-                if (_activeTab.value == DashboardTab.FOR_YOU && !endReachedForYou) {
-                    val forYouFeed = apiPostsHelper.getForYouFeed(userId, _postsCurrentPageForYou.value, 10)
-                    if (forYouFeed.isEmpty()) {
-                        endReachedForYou = true
-                    } else {
-                        _dashboardForYouPosts.value += forYouFeed
-                        _postsCurrentPageForYou.value += 1
-                    }
-                } else if (_activeTab.value == DashboardTab.FOLLOWED && !endReachedFollowing) {
-                    val followingFeed = apiPostsHelper.getFollowingFeed(userId, _postsCurrentPageFollowing.value, 10)
-                    if (followingFeed.isEmpty()) {
-                        endReachedFollowing = true
-                    } else {
-                        _dashboardFollowedPosts.value += followingFeed
-                        _postsCurrentPageFollowing.value += 1
-                    }
-                }
-            } catch (e: Exception) {
-                // obsługa błędu
-            } finally {
-                isLoading = false
+            when (_activeTab.value) {
+                DashboardTab.FOR_YOU -> loadForYouPosts(userId)
+                DashboardTab.FOLLOWED -> loadFollowedPosts(userId)
+                DashboardTab.USER -> loadUserPosts(userId)
             }
+        }
+    }
+
+    private suspend fun loadForYouPosts(userId: Long) {
+        if (endReachedForYou) return
+
+        _isLoading.value = true
+
+        try {
+            val forYouFeed = apiPostsHelper.getForYouFeed(
+                userId = userId,
+                offset = _postsCurrentPageForYou.value,
+                limit = 10
+            )
+
+            if (forYouFeed.isEmpty()) {
+                endReachedForYou = true
+            } else {
+                _dashboardForYouPosts.value += forYouFeed
+                _postsCurrentPageForYou.value += 1
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    private suspend fun loadFollowedPosts(userId: Long) {
+        if (endReachedFollowing) return
+
+        _isLoading.value = true
+
+        try {
+            val followingFeed = apiPostsHelper.getFollowingFeed(
+                userId = userId,
+                offset = _postsCurrentPageFollowing.value,
+                limit = 10
+            )
+
+            if (followingFeed.isEmpty()) {
+                endReachedFollowing = true
+            } else {
+                _dashboardFollowedPosts.value += followingFeed
+                _postsCurrentPageFollowing.value += 1
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    private suspend fun loadUserPosts(userId: Long) {
+        if (userPostsLoaded) return
+
+        _isLoading.value = true
+
+        try {
+            val userPosts = apiPostsHelper.getUserPosts(userId)
+            _dashboardUserPosts.value = userPosts
+            userPostsLoaded = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            _isLoading.value = false
         }
     }
 

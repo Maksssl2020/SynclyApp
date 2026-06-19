@@ -50,6 +50,7 @@ import pl.skomunikacja.synclyapp.ui.theme.Gray300
 import pl.skomunikacja.synclyapp.ui.theme.White100
 import pl.skomunikacja.synclyapp.view_model.SearchViewModel
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Search
@@ -70,19 +71,19 @@ import pl.skomunikacja.synclyapp.ui.theme.Teal100
 fun SearchScreen(
     viewModel: SearchViewModel = viewModel()
 ) {
-    val authenticationData by ApplicationManager.authenticationData.collectAsState()
-    val userPostCollections by ApplicationManager.userPostCollections.collectAsState()
+    val authenticationData by ApplicationManager.authenticationData.collectAsStateWithLifecycle()
+    val userPostCollections by ApplicationManager.userPostCollections.collectAsStateWithLifecycle()
 
     var searchText by remember { mutableStateOf("") }
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var isLoading by remember { mutableStateOf(false) }
 
-    val postResults by viewModel.searchedPosts.collectAsState()
-    val userResults by viewModel.searchedUsers.collectAsState()
-    val tagResults by viewModel.searchedTags.collectAsState()
+    val postResults by viewModel.searchedPosts.collectAsStateWithLifecycle()
+    val userResults by viewModel.searchedUsers.collectAsStateWithLifecycle()
+    val tagResults by viewModel.searchedTags.collectAsStateWithLifecycle()
 
-    val followedUsers by viewModel.followedUsers.collectAsState()
+    val followedUsers by viewModel.followedUsers.collectAsStateWithLifecycle()
     val followedUserIds by remember(followedUsers) {
         derivedStateOf {
             followedUsers.map { it.userProfileId }
@@ -116,7 +117,7 @@ fun SearchScreen(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Szukaj",
+                text = "Search",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = White100,
@@ -128,7 +129,7 @@ fun SearchScreen(
                 onValueChange = { searchText = it },
                 placeholder = {
                     Text(
-                        text = "Szukaj użytkowników, tagów, postów...",
+                        text = "Search users, tags, posts...",
                         color = Gray300
                     )
                 },
@@ -167,7 +168,7 @@ fun SearchScreen(
                         modifier = Modifier.size(48.dp)
                     )
                     Text(
-                        text = "Zacznij wpisywać, aby wyszukać",
+                        text = "Start typing to search",
                         color = Gray300,
                         fontSize = 16.sp,
                         modifier = Modifier.padding(top = 16.dp)
@@ -266,7 +267,7 @@ fun UserSearchResults(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Nie znaleziono użytkowników",
+                text = "No users found",
                 color = Gray300,
                 fontSize = 16.sp
             )
@@ -325,7 +326,7 @@ fun UserSearchResults(
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = "${user.userProfile.followersCount} obserwujących",
+                                text = "${user.userProfile.followersCount} followers",
                                 color = Gray300,
                                 fontSize = 12.sp
                             )
@@ -345,7 +346,7 @@ fun UserSearchResults(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = if (isFollowed) "Obserwujesz" else "Obserwuj",
+                                text = if (isFollowed) "Following" else "Follow",
                                 color = if (isFollowed) White100 else Black400,
                                 fontSize = 12.sp
                             )
@@ -365,7 +366,7 @@ fun TagSearchResults(tags: List<Tag>) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Nie znaleziono tagów",
+                text = "No tags found",
                 color = Gray300,
                 fontSize = 16.sp
             )
@@ -422,7 +423,7 @@ fun PostSearchResults(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Nie znaleziono postów",
+                text = "No posts found",
                 color = Gray300,
                 fontSize = 16.sp
             )

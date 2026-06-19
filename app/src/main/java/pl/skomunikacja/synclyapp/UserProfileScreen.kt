@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.model.PostCollection
@@ -65,37 +66,36 @@ fun UserProfileScreen(
     userId: Long,
     viewModel: UserProfileViewModel = viewModel()
 ) {
-    Log.d("UserProfile", "Loading profile for user: $userId")
+    val authenticationData by ApplicationManager.authenticationData.collectAsStateWithLifecycle()
+    val userPostCollections by ApplicationManager.userPostCollections.collectAsStateWithLifecycle()
 
-    val authenticationData by ApplicationManager.authenticationData.collectAsState()
-    val userPostCollections by ApplicationManager.userPostCollections.collectAsState()
-    val userProfile by viewModel.userProfile.collectAsState()
-    val userPosts by viewModel.userProfilePosts.collectAsState()
-
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
-
-
-    LaunchedEffect(userId) {
-        viewModel.loadUserProfileData(userId)
-    }
-
-    LaunchedEffect(authenticationData != null) {
-        viewModel.loadAuthenticatedUserData(authenticationData!!.userId, userId)
-    }
+    val userProfile by viewModel.userProfile.collectAsStateWithLifecycle()
+    val userPosts by viewModel.userProfilePosts.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
 
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Posts", "Shared")
 
+    LaunchedEffect(userId, authenticationData?.userId) {
+        viewModel.loadProfileScreen(
+            profileOwnerId = userId,
+            authenticatedUserId = authenticationData?.userId
+        )
+    }
+
     when {
         isLoading -> FullScreenLoading()
+
         error != null -> FullScreenError(error!!)
+
         userProfile == null -> FullScreenError("User not found")
+
         else -> ProfileContent(
-            userProfile!!,
-            userPosts,
-            selectedTab,
-            onTabChange = { i -> selectedTab = i },
+            userProfile = userProfile!!,
+            userProfilePosts = userPosts,
+            selectedTab = selectedTab,
+            onTabChange = { selectedTab = it },
             tabs = tabs,
             isOwnProfile = authenticationData?.userId == userId,
             userPostCollections = userPostCollections,
@@ -269,7 +269,7 @@ fun ProfileHeader(
                 .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            ProfileStatCard("Posts", userProfile.followersCount.toString())
+            ProfileStatCard("Posts", userProfile.postsCount.toString())
             ProfileStatCard("Followers", userProfile.followersCount.toString())
             ProfileStatCard("Following", userProfile.followingCount.toString())
             ProfileStatCard("Profile Likes", userProfile.profileLikes.toString())

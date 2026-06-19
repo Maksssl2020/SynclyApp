@@ -1,18 +1,14 @@
 package pl.skomunikacja.synclyapp.ui.components
 
 import android.content.Intent
-import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,17 +21,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -59,12 +54,12 @@ import coil.compose.AsyncImage
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Bookmark
-import compose.icons.fontawesomeicons.solid.Camera
 import compose.icons.fontawesomeicons.solid.Comment
 import compose.icons.fontawesomeicons.solid.Link
 import compose.icons.fontawesomeicons.solid.QuoteLeft
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import pl.skomunikacja.synclyapp.helpers.Utils.timeAgoOrDate
+import pl.skomunikacja.synclyapp.helpers.isDirectVideoUrl
+import pl.skomunikacja.synclyapp.helpers.isYoutubeUrl
 import pl.skomunikacja.synclyapp.model.PostCollection
 import pl.skomunikacja.synclyapp.model.post.LinkPost
 import pl.skomunikacja.synclyapp.model.post.PhotoPost
@@ -80,8 +75,8 @@ import pl.skomunikacja.synclyapp.ui.theme.Gray400
 import pl.skomunikacja.synclyapp.ui.theme.Gray600
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
 import pl.skomunikacja.synclyapp.ui.theme.White100
-import pl.skomunikacja.synclyapp.ui.timeAgoOrDate
 import pl.skomunikacja.synclyapp.view_model.PostViewModel
+import kotlin.math.log
 
 @Composable
 fun DashboardPostCard(
@@ -95,6 +90,8 @@ fun DashboardPostCard(
     var showSaveModal by remember { mutableStateOf(false) }
     var showPhotoModal by remember { mutableStateOf(false) }
     var showVideoModal by remember { mutableStateOf(false) }
+    var showOptionsMenu by remember { mutableStateOf(false) }
+    var showReportModal by remember { mutableStateOf(false) }
     var selectedMediaIndex by remember { mutableIntStateOf(0) }
 
     val timeAgoOrDate = timeAgoOrDate(post.createdAt)
@@ -151,20 +148,42 @@ fun DashboardPostCard(
                             fontSize = 14.sp,
                             modifier = Modifier.clickable { onAuthorClick(post.authorId) }
                         )
-                        Text(
-                            text = " • ${post.createdAt}",
-                            color = Gray400,
-                            fontSize = 14.sp
-                        )
+
                     }
+                    Text(
+                        text = timeAgoOrDate,
+                        color = Gray400,
+                        fontSize = 10.sp
+                    )
                 }
 
-                IconButton(onClick = { /* TODO: Show options */ }) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = "Options",
-                        tint = Gray400
-                    )
+                Box {
+                    IconButton(onClick = { showOptionsMenu = true }) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = "Options",
+                            tint = Gray400
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showOptionsMenu,
+                        onDismissRequest = { showOptionsMenu = false },
+                        containerColor = Black200
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = "Report post",
+                                    color = White100
+                                )
+                            },
+                            onClick = {
+                                showOptionsMenu = false
+                                showReportModal = true
+                            }
+                        )
+                    }
                 }
             }
 
@@ -263,7 +282,7 @@ fun DashboardPostCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = post.commentsCount.toString(),
+                                text = comments.value.size.toString(),
                                 color = Color(0xFFB0B0B0),
                                 fontSize = 14.sp
                             )
@@ -327,7 +346,10 @@ fun DashboardPostCard(
                     post.id,
                     viewModel,
                     currentUserId,
-                    comments.value
+                    comments.value,
+                    {
+                        onAuthorClick(post.authorId)
+                    }
                 )
             }
         }
@@ -343,10 +365,12 @@ fun DashboardPostCard(
     }
 
     if (post is VideoPost) {
+        val directVideoUrls = post.videoUrls.filter { isDirectVideoUrl(it) }
+
         VideoViewerModal(
             isVisible = showVideoModal,
-            videoUrls = post.videoUrls,
-            initialIndex = selectedMediaIndex,
+            videoUrls = directVideoUrls,
+            initialIndex = selectedMediaIndex.coerceAtMost(directVideoUrls.lastIndex),
             onDismiss = { showVideoModal = false }
         )
     }
@@ -363,6 +387,14 @@ fun DashboardPostCard(
             isSaved = it
         }
     )
+
+    ReportPostModal(
+        isVisible = showReportModal,
+        postId = post.id,
+        authorName = post.authorName.orEmpty(),
+        onDismiss = { showReportModal = false },
+        authorId = currentUserId
+    )
 }
 
 @Composable
@@ -375,7 +407,7 @@ private fun GetPostDataDisplay(
 
     when (post) {
         is TextPost -> {
-            if (post.title.isNotEmpty()) {
+            if (!post.title.isNullOrEmpty()) {
                 Text(
                     text = post.title,
                     color = White100,
@@ -434,6 +466,10 @@ private fun GetPostDataDisplay(
             }
         }
         is PhotoPost -> {
+            post.imageUrls.forEach {
+                Log.d("PHOTO_URL", it)
+            }
+
             if (post.caption.isNotEmpty()) {
                 Text(
                     text = post.caption,
@@ -444,17 +480,15 @@ private fun GetPostDataDisplay(
                 Spacer(modifier = Modifier.height(12.dp))
             }
             if (post.imageUrls.size == 1) {
-                AsyncImage(
-                    model = post.imageUrls[0],
-                    contentDescription = "Post Image",
+                PostImage(
+                    imageValue = post.imageUrls[0],
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {
                             onShowPhotoModalClick(true, 0)
-                        },
-                    contentScale = ContentScale.Crop
+                        }
                 )
             } else {
                 LazyRow(
@@ -462,22 +496,25 @@ private fun GetPostDataDisplay(
                 ) {
                     items(post.imageUrls.size) { index ->
                         val imageUrl = post.imageUrls[index]
-                        AsyncImage(
-                            model = imageUrl,
-                            contentDescription = "Post Image ${index + 1}",
+
+                        PostImage(
+                            imageValue = imageUrl,
                             modifier = Modifier
                                 .size(200.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .clickable {
                                     onShowPhotoModalClick(true, index)
-                                },
-                            contentScale = ContentScale.Crop
+                                }
                         )
                     }
                 }
             }
         }
         is VideoPost -> {
+            post.videoUrls.forEach {
+                Log.d("VIDEO_URL", it)
+            }
+
             if (post.description.isNotEmpty()) {
                 Text(
                     text = post.description,
@@ -493,20 +530,32 @@ private fun GetPostDataDisplay(
             ) {
                 items(post.videoUrls.size) { index ->
                     val videoUrl = post.videoUrls[index]
-                    VideoThumbnail(videoUrl) {
-                        onShowVideoModalClick(true, index)
+                    if (isDirectVideoUrl(videoUrl)) {
+                        VideoThumbnail(videoUrl) {
+                            onShowVideoModalClick(true, index)
+                        }
+                    } else if (isYoutubeUrl(videoUrl)) {
+                        YoutubeLinkCard(videoUrl)
+                    } else {
+                        Text(
+                            text = "Unsupported video format",
+                            color = Gray400,
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
         }
         is LinkPost -> {
-            Text(
-                text = post.title,
-                color = White100,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 24.sp
-            )
+            post.title?.let {
+                Text(
+                    text = it,
+                    color = White100,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 24.sp
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = post.description,
@@ -553,73 +602,3 @@ private fun GetPostDataDisplay(
     }
 }
 
-@Composable
-fun VideoThumbnail(
-    videoUrl: String?,
-    onClick: () -> Unit
-) {
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-
-    LaunchedEffect(videoUrl) {
-        withContext(Dispatchers.IO) {
-            if (videoUrl.isNullOrBlank()) {
-                bitmap = null
-                return@withContext
-            }
-
-            try {
-                val retriever = MediaMetadataRetriever()
-                retriever.setDataSource(videoUrl, HashMap())
-                val frame = retriever.getFrameAtTime(1_000_000, MediaMetadataRetriever.OPTION_CLOSEST)
-                bitmap = frame
-                retriever.release()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                bitmap = null
-            }
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .size(200.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .clickable { onClick() }
-    ) {
-        if (bitmap != null) {
-            Image(
-                bitmap = bitmap!!.asImageBitmap(),
-                contentDescription = "Video thumbnail",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    FontAwesomeIcons.Solid.Camera,
-                    contentDescription = "No thumbnail",
-                    tint = Color.White
-                )
-            }
-        }
-
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Default.PlayArrow,
-                contentDescription = "Play video",
-                tint = Color.White,
-                modifier = Modifier.size(48.dp)
-            )
-        }
-    }
-}
