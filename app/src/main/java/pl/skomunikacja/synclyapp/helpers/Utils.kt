@@ -8,8 +8,10 @@ import android.net.Uri
 import android.util.Base64
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import pl.skomunikacja.synclyapp.ui.theme.Teal100
 import java.io.File
 import java.io.FileOutputStream
 import java.time.Instant
@@ -18,6 +20,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
 object Utils {
 
@@ -143,3 +146,23 @@ fun isDirectVideoUrl(url: String): Boolean {
 fun isYoutubeUrl(url: String): Boolean {
     return url.contains("youtube.com") || url.contains("youtu.be")
 }
+
+fun normalizeWebsiteUrl(url: String): String {
+    val trimmedUrl = url.trim()
+
+    return if (
+        trimmedUrl.startsWith("http://") ||
+        trimmedUrl.startsWith("https://")
+    ) {
+        trimmedUrl
+    } else {
+        "https://$trimmedUrl"
+    }
+}
+
+fun parseHexColor(hex: String): Color =
+    try {
+        Color(hex.toColorInt())
+    } catch (e: IllegalArgumentException) {
+        Teal100
+    }

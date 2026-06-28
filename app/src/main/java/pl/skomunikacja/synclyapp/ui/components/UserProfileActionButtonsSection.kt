@@ -34,6 +34,8 @@ import pl.skomunikacja.synclyapp.model.UserProfileData
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Black400
 import pl.skomunikacja.synclyapp.ui.theme.Gray300
+import pl.skomunikacja.synclyapp.ui.theme.Red100
+import pl.skomunikacja.synclyapp.ui.theme.Red200
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
 import pl.skomunikacja.synclyapp.ui.theme.White100
 import pl.skomunikacja.synclyapp.view_model.UserProfileViewModel
@@ -56,13 +58,6 @@ fun ProfileActionButtons(
         followedUser.profileOwnerId == userProfile.profileOwnerId
     }
 
-    print("authenticatedUserFriendRequestStatus: $authenticatedUserFriendRequestStatus")
-    print("authenticatedUserFriendRequestStatus: $authenticatedUserFriendRequestStatus")
-    print("authenticatedUserFriendRequestStatus: $authenticatedUserFriendRequestStatus")
-    print("authenticatedUserFriendRequestStatus: $authenticatedUserFriendRequestStatus")
-    print("authenticatedUserFriendRequestStatus: $authenticatedUserFriendRequestStatus")
-
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,7 +66,6 @@ fun ProfileActionButtons(
     ) {
         Button(
             onClick = {
-
                 if (isFollowing) {
                     viewModel.unfollowUser(userProfile.userProfileId, authenticatedUserId)
                 } else{
@@ -82,7 +76,7 @@ fun ProfileActionButtons(
                 .weight(1f),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isFollowing) Gray300 else Teal100
+                containerColor = if (isFollowing) Red100 else Teal100
             )
         ) {
             Text(
@@ -148,7 +142,7 @@ fun ProfileActionButtons(
                         viewModel.cancelFriendRequest(authenticatedUserId, userProfile.profileOwnerId)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Gray300),
+                    colors = ButtonDefaults.buttonColors(containerColor = Red100),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Cancel friend request", color = White100)

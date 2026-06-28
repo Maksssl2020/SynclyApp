@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -44,6 +45,8 @@ import compose.icons.fontawesomeicons.solid.Link
 import pl.skomunikacja.synclyapp.helpers.Utils.timeAgoOrDate
 import pl.skomunikacja.synclyapp.model.FriendRequestData
 import pl.skomunikacja.synclyapp.model.FriendUserData
+import pl.skomunikacja.synclyapp.model.PostCollection
+import pl.skomunikacja.synclyapp.model.post.SharedPost
 import pl.skomunikacja.synclyapp.ui.theme.Black200
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Gray300
@@ -200,10 +203,11 @@ fun ProfileStatCard(label: String, value: String) {
 @Composable
 fun FriendRequestCard(
     friendRequest: FriendRequestData,
+    onNavigateToUserProfile: (Long) -> Unit,
     isOutgoing: Boolean = false,
     onAccept: ((requestId: Long) -> Unit)? = null,
     onReject: ((requestId: Long) -> Unit)? = null,
-    onRemoveFriendRequest: ((receiverId: Long) -> Unit)? = null
+    onRemoveFriendRequest: ((receiverId: Long) -> Unit)? = null,
 ) {
     val user = if (isOutgoing) friendRequest.receiver else friendRequest.requester
 
@@ -222,14 +226,16 @@ fun FriendRequestCard(
                 modifier = Modifier
                     .size(50.dp)
                     .clip(CircleShape)
-                    .background(Gray300),
+                    .background(Teal100),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = user.userProfile.displayName.first().toString(),
-                    color = White100,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                ProfileAvatar(
+                    initials = user.userProfile.displayName.first().toString(),
+                    onAvatarClick = {
+                        onNavigateToUserProfile(user.userProfile.userProfileId)
+                    },
+                    modifier = Modifier,
+                    base64Image = user.userProfile.avatar?.imageData
                 )
             }
 
@@ -342,6 +348,42 @@ fun YoutubeLinkCard(url: String) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+    }
+}
+
+@Composable
+fun SharedPostCard(
+    sharedPost: SharedPost,
+    userPostCollections: List<PostCollection>
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Black300),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                Icon(
+                    Icons.Default.Share,
+                    contentDescription = "Shared",
+                    tint = Gray300,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${sharedPost.sharedBy.userProfile.displayName} shared",
+                    color = Gray300,
+                    fontSize = 14.sp
+                )
+            }
+
+            DashboardPostCard(post = sharedPost.originalPost, userPostCollections = userPostCollections)
         }
     }
 }

@@ -39,6 +39,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Eye
@@ -60,7 +61,7 @@ import pl.skomunikacja.synclyapp.view_model.SignInViewModel
 fun SignInScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
-    viewModel: SignInViewModel = SignInViewModel(),
+    viewModel: SignInViewModel = viewModel(),
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -77,7 +78,6 @@ fun SignInScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo/Title
         Text(
             text = "Syncly",
             fontSize = 36.sp,
@@ -94,7 +94,6 @@ fun SignInScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // Username Field
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
@@ -239,7 +238,6 @@ fun handleSignIn(
 
         if (response != null) {
             Toast.makeText(context, "Hello, ${response.username}!", Toast.LENGTH_SHORT).show()
-            ApplicationManager.changeAuthenticationData(response)
             onSuccess()
         } else {
             Toast.makeText(context, "Authentication failed. Please try again.", Toast.LENGTH_LONG).show()

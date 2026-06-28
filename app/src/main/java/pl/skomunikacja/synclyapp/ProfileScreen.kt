@@ -1,6 +1,5 @@
 package pl.skomunikacja.synclyapp
 
-import android.app.Application
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,13 +21,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -55,9 +52,8 @@ import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.model.UserProfileUpdateRequest
 import pl.skomunikacja.synclyapp.ui.components.AvatarUploadDialog
 import pl.skomunikacja.synclyapp.ui.components.ProfileAvatar
+import pl.skomunikacja.synclyapp.ui.components.ProfileEditInput
 import pl.skomunikacja.synclyapp.ui.components.ProfileStatCard
-import pl.skomunikacja.synclyapp.ui.theme.Black100
-import pl.skomunikacja.synclyapp.ui.theme.Black200
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Black400
 import pl.skomunikacja.synclyapp.ui.theme.Gray300
@@ -152,40 +148,40 @@ fun ProfileScreen(
         if (isEditMode) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            ProfileEditField(
+            ProfileEditInput(
                 label = "Display Name",
                 value = displayName,
                 onValueChange = { displayName = it }
             )
 
-            ProfileEditField(
+            ProfileEditInput(
                 label = "Username",
                 value = username,
                 onValueChange = { username = it }
             )
 
-            ProfileEditField(
+            ProfileEditInput(
                 label = "Email",
                 value = email,
                 onValueChange = { email = it },
                 keyboardType = KeyboardType.Email
             )
 
-            ProfileEditField(
+            ProfileEditInput(
                 label = "Bio",
                 value = bio,
                 onValueChange = { bio = it },
                 maxLines = 3
             )
 
-            ProfileEditField(
+            ProfileEditInput(
                 label = "Website",
                 value = website,
                 onValueChange = { website = it },
                 keyboardType = KeyboardType.Uri
             )
 
-            ProfileEditField(
+            ProfileEditInput(
                 label = "Location",
                 value = location,
                 onValueChange = { location = it }
@@ -372,41 +368,5 @@ fun ProfileScreen(
 
 }
 
-@Composable
-fun ProfileEditField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    maxLines: Int = 1
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
-        Text(
-            text = label,
-            color = Gray300,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
 
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = White100,
-                unfocusedTextColor = White100,
-                focusedBorderColor = Teal100,
-                unfocusedBorderColor = Gray300,
-                cursorColor = Teal100
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            maxLines = maxLines,
-            shape = RoundedCornerShape(12.dp)
-        )
-    }
-}
 

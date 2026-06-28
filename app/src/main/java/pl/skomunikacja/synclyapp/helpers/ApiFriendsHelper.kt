@@ -36,7 +36,7 @@ class ApiFriendsHelper(
         return try {
             val response = api.getFriendRequestStatus(requesterId, receiverId)
             response.isSuccessful
-            response.body()
+            response.body()?.friendStatus
         } catch (ex: Exception) {
             println("Failed to get friend request status: ${ex.message}")
             FriendStatus.NONE

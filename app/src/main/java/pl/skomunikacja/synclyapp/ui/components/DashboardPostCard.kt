@@ -57,9 +57,11 @@ import compose.icons.fontawesomeicons.solid.Bookmark
 import compose.icons.fontawesomeicons.solid.Comment
 import compose.icons.fontawesomeicons.solid.Link
 import compose.icons.fontawesomeicons.solid.QuoteLeft
+import pl.skomunikacja.synclyapp.helpers.PostCollectionsManager
 import pl.skomunikacja.synclyapp.helpers.Utils.timeAgoOrDate
 import pl.skomunikacja.synclyapp.helpers.isDirectVideoUrl
 import pl.skomunikacja.synclyapp.helpers.isYoutubeUrl
+import pl.skomunikacja.synclyapp.helpers.normalizeWebsiteUrl
 import pl.skomunikacja.synclyapp.model.PostCollection
 import pl.skomunikacja.synclyapp.model.post.LinkPost
 import pl.skomunikacja.synclyapp.model.post.PhotoPost
@@ -85,7 +87,7 @@ fun DashboardPostCard(
     onAuthorClick: (Long) -> Unit = {},
     userPostCollections: List<PostCollection>
 ) {
-    var isSaved by remember { mutableStateOf(post.savedBy.contains(currentUserId)) }
+    var isSaved by remember { mutableStateOf( PostCollectionsManager.checkIfCollectionsContainsPost(post.id)) }
     var showComments by remember { mutableStateOf(false) }
     var showSaveModal by remember { mutableStateOf(false) }
     var showPhotoModal by remember { mutableStateOf(false) }
@@ -123,7 +125,9 @@ fun DashboardPostCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ProfileAvatar(
-                    onAvatarClick = {},
+                    onAvatarClick = {
+                        onAuthorClick(post.authorId)
+                    },
                     base64Image = post.authorAvatar?.imageData,
                     initials = post.authorName.first().toString(),
                     modifier = Modifier
@@ -441,7 +445,7 @@ private fun GetPostDataDisplay(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Cytat",
+                            text = "Quote",
                             color = Teal100,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -511,10 +515,6 @@ private fun GetPostDataDisplay(
             }
         }
         is VideoPost -> {
-            post.videoUrls.forEach {
-                Log.d("VIDEO_URL", it)
-            }
-
             if (post.description.isNotEmpty()) {
                 Text(
                     text = post.description,
@@ -572,8 +572,13 @@ private fun GetPostDataDisplay(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-                            context.startActivity(intent)
+                            try {
+                                val normalizedUrl = normalizeWebsiteUrl(url)
+                                val intent = Intent(Intent.ACTION_VIEW, normalizedUrl.toUri())
+                                context.startActivity(intent)
+                            } catch (ex: Exception) {
+                                Log.e("LinkPost", "Cannot open url: $url", ex)
+                            }
                         }
                 ) {
                     Row(

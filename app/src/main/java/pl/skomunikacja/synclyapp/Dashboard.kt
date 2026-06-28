@@ -38,6 +38,7 @@ import compose.icons.fontawesomeicons.solid.FastForward
 import compose.icons.fontawesomeicons.solid.ObjectGroup
 import compose.icons.fontawesomeicons.solid.User
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
+import pl.skomunikacja.synclyapp.helpers.PostCollectionsManager
 import pl.skomunikacja.synclyapp.model.DashboardTab
 import pl.skomunikacja.synclyapp.ui.components.DashboardPostCard
 import pl.skomunikacja.synclyapp.ui.theme.Black200
@@ -53,7 +54,7 @@ fun DashboardScreen(
     dashboardViewModel: DashboardViewModel = viewModel(),
 ) {
     val authenticationData by ApplicationManager.authenticationData.collectAsStateWithLifecycle()
-    val userPostCollections by ApplicationManager.userPostCollections.collectAsStateWithLifecycle()
+    val userPostCollections by PostCollectionsManager.userPostCollections.collectAsStateWithLifecycle()
     val activeTab by dashboardViewModel.activeTab.collectAsStateWithLifecycle()
     val forYouPosts by dashboardViewModel.dashboardForYouPosts.collectAsStateWithLifecycle()
     val followedPosts by dashboardViewModel.dashboardFollowedPosts.collectAsStateWithLifecycle()
@@ -63,12 +64,8 @@ fun DashboardScreen(
 
     val posts = if (activeTab == DashboardTab.FOR_YOU) forYouPosts else if (activeTab == DashboardTab.FOLLOWED) followedPosts else  dashboardUserPosts
 
-    LaunchedEffect(authenticationData?.userId, userPostCollections.isEmpty()) {
-        val userId = authenticationData?.userId ?: return@LaunchedEffect
-
-        if (userPostCollections.isEmpty()) {
-            dashboardViewModel.fetchUserPostCollections(userId)
-        }
+    LaunchedEffect(authenticationData?.userId) {
+        dashboardViewModel.ensurePostCollectionsLoaded()
     }
 
     LaunchedEffect(activeTab, authenticationData?.userId) {

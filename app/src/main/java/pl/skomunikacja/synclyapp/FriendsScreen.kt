@@ -35,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.ui.components.FriendCard
 import pl.skomunikacja.synclyapp.ui.components.FriendRequestCard
@@ -48,8 +47,8 @@ import pl.skomunikacja.synclyapp.view_model.FriendsViewModel
 
 @Composable
 fun FriendsScreen(
-    navController: NavHostController,
-    viewModel: FriendsViewModel = viewModel()
+    viewModel: FriendsViewModel = viewModel(),
+    onNavigateToUserProfile: (Long) -> Unit,
 ) {
     val context = LocalContext.current
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -148,10 +147,10 @@ fun FriendsScreen(
                         FriendCard(
                             friend = friend,
                             onAvatarClick = {
-                                navController.navigate("user_profile/${friend.user.userId}")
+                                onNavigateToUserProfile(friend.user.userId)
                             },
                             onCardClick = {
-                                navController.navigate("user_profile/${friend.user.userId}")
+                                onNavigateToUserProfile(friend.user.userId)
                             },
                             onMoreClick = { /* TODO: Show options menu */ }
                         )
@@ -165,7 +164,7 @@ fun FriendsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Brak oczekujących zaproszeń",
+                            text = "No pending friend requests",
                             color = Gray300,
                             fontSize = 16.sp
                         )
@@ -177,6 +176,9 @@ fun FriendsScreen(
                         items(sentRequests) { request ->
                             FriendRequestCard(
                                 friendRequest = request,
+                                 {
+                                    onNavigateToUserProfile(it)
+                                },
                                 isOutgoing = false,
                                 onAccept = { requestId ->
                                     viewModel.acceptPendingFriendRequest(requestId, {}, {
@@ -200,7 +202,7 @@ fun FriendsScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Brak wysłanych zaproszeń",
+                            text = "No friend requests sent",
                             color = Gray300,
                             fontSize = 16.sp
                         )
@@ -212,6 +214,9 @@ fun FriendsScreen(
                         items(sentRequests) { request ->
                             FriendRequestCard(
                                 friendRequest = request,
+                                {
+                                    onNavigateToUserProfile(it)
+                                },
                                 isOutgoing = true,
                                 onRemoveFriendRequest = { receiverId ->
                                     if (authenticationData != null) {

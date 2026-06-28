@@ -45,13 +45,19 @@ class ProfileViewModel(
     suspend fun uploadAvatar(context: Context, userId: Long) {
         if (_state.value.avatarUri != null) {
             val multipartBodyPart =
-                uriToMultipartBodyPart(context, _state.value.avatarUri!!, "user_avatar")
+                uriToMultipartBodyPart(context, _state.value.avatarUri!!, "file")
             val uploadedAvatar = apiUsersHelper.uploadAvatar(userId, multipartBodyPart)
 
             if (uploadedAvatar != null) {
                 _state.update {
                     it.copy(
                         avatarBase64 = uploadedAvatar.imageData
+                    )
+                }
+
+                _userProfile.update {
+                    it?.copy(
+                        avatar = uploadedAvatar
                     )
                 }
             }

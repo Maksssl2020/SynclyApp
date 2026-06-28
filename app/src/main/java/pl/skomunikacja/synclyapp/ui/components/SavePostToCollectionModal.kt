@@ -79,7 +79,7 @@ fun SaveToCollectionModal(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Zapisz do kolekcji",
+                            text = "Save to collection",
                             color = White100,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
@@ -88,7 +88,7 @@ fun SaveToCollectionModal(
                         IconButton(onClick = onDismiss) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Zamknij",
+                                contentDescription = "close",
                                 tint = Gray400
                             )
                         }
@@ -96,7 +96,7 @@ fun SaveToCollectionModal(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    if (collections.isEmpty()) {
+                    if (filteredPostCollections.isEmpty()) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -105,13 +105,13 @@ fun SaveToCollectionModal(
                         ) {
                             Icon(
                                 FontAwesomeIcons.Solid.FolderOpen,
-                                contentDescription = "Brak kolekcji",
+                                contentDescription = "No collections",
                                 tint = Gray400,
                                 modifier = Modifier.size(48.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Brak kolekcji",
+                                text = "No collections",
                                 color = White100,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold

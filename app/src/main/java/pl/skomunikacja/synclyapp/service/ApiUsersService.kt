@@ -15,6 +15,7 @@ import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Url
@@ -48,7 +49,7 @@ interface ApiUsersService {
     @POST("api/v1/users-profiles/android-app/upload/avatar/{userId}")
     suspend fun uploadAvatar(
         @Path("userId") userId: Long,
-        @Body data: MultipartBody.Part
+        @Part file: MultipartBody.Part
     ): Response<Image?>
 
     @PATCH("api/v1/users-profiles/android-app/update/{userId}")

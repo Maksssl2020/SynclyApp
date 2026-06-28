@@ -24,11 +24,6 @@ fun ProfileAvatar(
 ) {
     val imageBitmap = rememberBase64Image(base64Image)
 
-
-    println("imageBitmap: " + imageBitmap)
-    println("imageBitmap:" )
-    println("base64Image: $base64Image" )
-
     if (imageBitmap != null) {
         Image(
             bitmap = imageBitmap,

@@ -45,12 +45,10 @@ class SearchViewModel : ViewModel() {
             if (isFollowed) {
                 val unfollowedUser = apiFollowsHelper.unfollowUser(userProfileId, userId)
                 if (unfollowedUser != null) {
-                    // Usuń użytkownika z listy obserwowanych
                     _followedUsers.value = _followedUsers.value.filter {
                         it.userProfileId != userProfileId
                     }
 
-                    // Aktualizuj licznik followers
                     _searchedUsers.value = _searchedUsers.value.map { user ->
                         if (user.userProfile.userProfileId == userProfileId) {
                             user.copy(
@@ -64,10 +62,8 @@ class SearchViewModel : ViewModel() {
             } else {
                 val followedUser = apiFollowsHelper.followUser(userProfileId, userId)
                 if (followedUser != null) {
-                    // Dodaj użytkownika do listy obserwowanych
-                    _followedUsers.value = _followedUsers.value + followedUser
+                    _followedUsers.value += followedUser
 
-                    // Aktualizuj licznik followers
                     _searchedUsers.value = _searchedUsers.value.map { user ->
                         if (user.userProfile.userProfileId == userProfileId) {
                             user.copy(

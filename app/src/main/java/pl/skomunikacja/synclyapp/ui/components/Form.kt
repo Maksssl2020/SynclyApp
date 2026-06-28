@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,8 +40,6 @@ import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Check
 import compose.icons.fontawesomeicons.solid.Plus
 import compose.icons.fontawesomeicons.solid.Trash
-import compose.icons.fontawesomeicons.solid.Video
-import pl.skomunikacja.synclyapp.MediaPreviewGrid
 import pl.skomunikacja.synclyapp.helpers.Utils.uriToFile
 import pl.skomunikacja.synclyapp.model.Tag
 import pl.skomunikacja.synclyapp.model.post.LinkPostRequest

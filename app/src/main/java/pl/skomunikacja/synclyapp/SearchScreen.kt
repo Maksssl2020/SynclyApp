@@ -30,7 +30,6 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -59,6 +58,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
+import pl.skomunikacja.synclyapp.helpers.PostCollectionsManager
 import pl.skomunikacja.synclyapp.model.PostCollection
 import pl.skomunikacja.synclyapp.model.Tag
 import pl.skomunikacja.synclyapp.model.UserData
@@ -69,10 +69,11 @@ import pl.skomunikacja.synclyapp.ui.theme.Teal100
 
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = viewModel()
+    viewModel: SearchViewModel = viewModel(),
+    onNavigateToUserProfile: (Long) -> Unit
 ) {
     val authenticationData by ApplicationManager.authenticationData.collectAsStateWithLifecycle()
-    val userPostCollections by ApplicationManager.userPostCollections.collectAsStateWithLifecycle()
+    val userPostCollections by PostCollectionsManager.userPostCollections.collectAsStateWithLifecycle()
 
     var searchText by remember { mutableStateOf("") }
 
@@ -231,15 +232,13 @@ fun SearchScreen(
                     0 -> UserSearchResults(
                         userResults,
                         followedUserIds,
-                        {userProfileId ->
+                        {userProfileId, isFollowed ->
                         authenticationData?.let {
-                            viewModel.toggleUserFollow(userProfileId, it.userId, false)
+                            viewModel.toggleUserFollow(userProfileId, it.userId, isFollowed)
                         }
                     },
-                        { userProfileId ->
-                            authenticationData?.let {
-                                viewModel.toggleUserFollow(userProfileId, it.userId, true)
-                            }
+                        onNavigateToUserProfile = {
+                            onNavigateToUserProfile(it)
                         }
                     )
                     1 -> TagSearchResults(tagResults)
@@ -258,8 +257,8 @@ fun SearchScreen(
 fun UserSearchResults(
     users: List<UserData>,
     followedUserIds: List<Long>,
-    onFollow: (userProfileId: Long) -> Unit,
-    onUnfollow: (userProfileId: Long) -> Unit
+    onFollowToggle: (userProfileId: Long, isFollowed: Boolean) -> Unit,
+    onNavigateToUserProfile: (Long) -> Unit
 ) {
     if (users.isEmpty()) {
         Box(
@@ -284,7 +283,7 @@ fun UserSearchResults(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { /* Navigate to user profile */ },
+                        .clickable { onNavigateToUserProfile(user.userProfile.userProfileId) },
                     colors = CardDefaults.cardColors(containerColor = Black300),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -334,11 +333,7 @@ fun UserSearchResults(
 
                         Button(
                             onClick = {
-                                if (isFollowed) {
-                                    onUnfollow(user.userProfile.userProfileId)
-                                } else {
-                                    onFollow(user.userProfile.userProfileId)
-                                }
+                                onFollowToggle(user.userProfile.userProfileId, isFollowed)
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (isFollowed) Gray500 else Teal100

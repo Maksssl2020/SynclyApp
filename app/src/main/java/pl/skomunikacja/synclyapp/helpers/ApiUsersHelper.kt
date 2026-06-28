@@ -45,8 +45,13 @@ class ApiUsersHelper(
     suspend fun uploadAvatar(userId: Long, data: MultipartBody.Part): Image? {
         return try {
             val response = api.uploadAvatar(userId, data)
-            response.isSuccessful
-            response.body()
+
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                println("Upload Avatar Failed: ${response.code()} ${response.errorBody()?.string()}")
+                null
+            }
         } catch (ex: Exception) {
             println("Upload Avatar Failed: ${ex.message}")
             null

@@ -22,9 +22,6 @@ object ApplicationManager {
     private val _authenticationData = MutableStateFlow<AuthenticationResponse?>(null)
     val authenticationData: StateFlow<AuthenticationResponse?> = _authenticationData.asStateFlow()
 
-    private val _userPostCollections = MutableStateFlow(emptyList<PostCollection>())
-    val userPostCollections = _userPostCollections.asStateFlow()
-
     fun initialize(context: Context) {
         settingsFile = File(context.filesDir, SETTINGS_FILE_NAME)
 
@@ -62,53 +59,6 @@ object ApplicationManager {
     fun changeAuthenticationData(data: AuthenticationResponse) {
         _authenticationData.value = data
         saveToFile()
-    }
-
-    fun changeUserPostCollections(userPostCollections: List<PostCollection>) {
-        _userPostCollections.value = userPostCollections
-    }
-
-    fun addPostToCollection(postCollectionId: Long, post: Post) {
-        val alreadyInNonDefault = checkIfCollectionsContainsPost(post.id)
-
-        _userPostCollections.value = _userPostCollections.value.map { collection ->
-            when {
-                collection.id == postCollectionId ->
-                    collection.copy(posts = ArrayList(collection.posts + post))
-
-                collection.default && !alreadyInNonDefault &&
-                        collection.posts.none { it.id == post.id } ->
-                    collection.copy(posts = ArrayList(collection.posts + post))
-
-                else -> collection
-            }
-        }
-    }
-
-    fun removePostFromCollection(postCollectionId: Long, postId: Long) {
-        _userPostCollections.value = _userPostCollections.value.map { collection ->
-            if (collection.id == postCollectionId) {
-                val updatedPosts = collection.posts.filterNot { it.id == postId }
-                collection.copy(posts = ArrayList(updatedPosts))
-            } else collection
-        }
-
-        val stillInNonDefault = checkIfCollectionsContainsPost(postId)
-
-        if (!stillInNonDefault) {
-            _userPostCollections.value = _userPostCollections.value.map { collection ->
-                if (collection.default) {
-                    val updatedPosts = collection.posts.filterNot { it.id == postId }
-                    collection.copy(posts = ArrayList(updatedPosts))
-                } else collection
-            }
-        }
-    }
-
-    fun checkIfCollectionsContainsPost(postId: Long): Boolean {
-        return _userPostCollections.value
-            .filterNot { it.default }
-            .any { collection -> collection.posts.any { it.id == postId } }
     }
 
 

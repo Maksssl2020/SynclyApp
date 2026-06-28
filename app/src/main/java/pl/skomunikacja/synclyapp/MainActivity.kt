@@ -92,9 +92,9 @@ fun MainAppContent(navController: NavHostController) {
             AppHeader(
                 title = when (currentRoute) {
                     "home" -> "Syncly"
-                    "friends" -> "Znajomi"
-                    "search" -> "Szukaj"
-                    "profile" -> "Profil"
+                    "friends" -> "Friends"
+                    "search" -> "Search"
+                    "profile" -> "Profile"
                     else -> "Syncly"
                 },
                 onPostCollectionsClick = { navController.navigate("postCollections") },
@@ -105,7 +105,6 @@ fun MainAppContent(navController: NavHostController) {
                 containerColor = Black300,
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
             ) {
-                // Home
                 IconButton(
                     onClick = {
                         navController.navigate("home") {
@@ -124,7 +123,6 @@ fun MainAppContent(navController: NavHostController) {
                     )
                 }
 
-                // Friends
                 IconButton(
                     onClick = {
                         navController.navigate("friends") {
@@ -170,7 +168,6 @@ fun MainAppContent(navController: NavHostController) {
                     }
                 }
 
-                // Search
                 IconButton(
                     onClick = {
                         navController.navigate("search") {
@@ -215,15 +212,25 @@ fun MainAppContent(navController: NavHostController) {
             modifier = Modifier.padding(padding)
         ) {
             composable("home") { DashboardScreen(navController) }
+            composable("postCollectionForm") { PostCollectionFormScreen(onGoBack = {
+                navController.popBackStack()
+            }) }
             composable("signIn") {
                 SignInScreen(
                     onLoginSuccess = { navController.navigate("home") },
                     onNavigateToRegister = { navController.navigate("register") }
                 )
             }
-            composable("postCollections") { PostCollectionScreen(onCollectionClick = {collection ->
-                navController.navigate("postCollectionDetails/${collection.id}")
-            }) }
+            composable("postCollections") {
+                PostCollectionScreen(
+                    onCollectionClick = {
+                        collection -> navController.navigate("postCollectionDetails/${collection.id}")
+                    },
+                    onNavigateToPostCollectionForm = {
+                        navController.navigate("postCollectionForm")
+                    }
+                )
+            }
             composable(
                 route = "postCollectionDetails/{collectionId}",
                 arguments = listOf(navArgument("collectionId") {type = NavType.LongType})
@@ -234,8 +241,12 @@ fun MainAppContent(navController: NavHostController) {
                     onBackClick = { navController.popBackStack() }
                 )
             }
-            composable("friends") { FriendsScreen(navController) }
-            composable("search") { SearchScreen() }
+            composable("friends") { FriendsScreen(onNavigateToUserProfile = {
+                navController.navigate("user_profile/${it}")
+            }) }
+            composable("search") { SearchScreen(onNavigateToUserProfile = {
+                navController.navigate("user_profile/${it}")
+            }) }
             composable("profile") { ProfileScreen(
                 onNavigateToSignInScreen = {
                     navController.navigate("signIn")

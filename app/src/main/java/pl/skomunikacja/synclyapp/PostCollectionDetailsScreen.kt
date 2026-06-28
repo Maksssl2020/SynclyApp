@@ -42,6 +42,7 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.FolderOpen
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
+import pl.skomunikacja.synclyapp.helpers.PostCollectionsManager
 import pl.skomunikacja.synclyapp.ui.components.DashboardPostCard
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Black400
@@ -56,7 +57,7 @@ fun PostCollectionDetailsScreen(
     onBackClick: () -> Unit,
     viewModel: PostCollectionsViewModel = viewModel()
 ) {
-    val userPostCollections by ApplicationManager.userPostCollections.collectAsState()
+    val userPostCollections by PostCollectionsManager.userPostCollections.collectAsState()
     val collection by viewModel.selectedPostCollection.collectAsState()
 
     LaunchedEffect(collectionId) {
@@ -69,7 +70,6 @@ fun PostCollectionDetailsScreen(
             .background(Black400)
     ) {
         if (collection == null) {
-            // Header with back button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,14 +84,14 @@ fun PostCollectionDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Wróć"
+                        contentDescription = "Go Back"
                     )
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "Kolekcja",
+                    text = "Post Collection",
                     color = White100,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
@@ -104,7 +104,6 @@ fun PostCollectionDetailsScreen(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
 
-            // Empty state for null collection
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -122,14 +121,14 @@ fun PostCollectionDetailsScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Kolekcja nie została znaleziona",
+                        text = "Post collection not found",
                         color = White200,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Ta kolekcja mogła zostać usunięta lub nie masz do niej dostępu.",
+                        text = "This collection may have been deleted or you may not have access to it",
                         color = White300,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center
@@ -137,7 +136,6 @@ fun PostCollectionDetailsScreen(
                 }
             }
         } else {
-            // Header with collection info and navigation
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -152,7 +150,7 @@ fun PostCollectionDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Wróć"
+                        contentDescription = "Go Back"
                     )
                 }
 
@@ -175,7 +173,7 @@ fun PostCollectionDetailsScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "${collection!!.posts.size} ${if (collection!!.posts.size == 1) "post" else "postów"}",
+                        text = "${collection!!.posts.size} ${if (collection!!.posts.size == 1) "post" else "posts"}",
                         color = White200,
                         fontSize = 14.sp
                     )
@@ -207,14 +205,14 @@ fun PostCollectionDetailsScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Brak postów",
+                            text = "No posts",
                             color = White200,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Ta kolekcja jest pusta. Dodaj posty, aby je tutaj zobaczyć.",
+                            text = "This collection is empty. Add posts to view them here",
                             color = White300,
                             fontSize = 14.sp,
                             textAlign = TextAlign.Center

@@ -1,6 +1,7 @@
 package pl.skomunikacja.synclyapp.service
 
 import pl.skomunikacja.synclyapp.model.FriendRequestData
+import pl.skomunikacja.synclyapp.model.FriendRequestStatus
 import pl.skomunikacja.synclyapp.model.FriendStatus
 import pl.skomunikacja.synclyapp.model.FriendUserData
 import retrofit2.Response
@@ -30,7 +31,7 @@ interface ApiFriendsService {
     suspend fun getFriendRequestStatus(
         @Query("requesterId") requesterId: Long,
         @Query("receiverId") receiverId: Long
-    ): Response<FriendStatus>
+    ): Response<FriendRequestStatus>
 
     @POST("api/v1/friends/accept/request")
     suspend fun acceptFriendRequest(

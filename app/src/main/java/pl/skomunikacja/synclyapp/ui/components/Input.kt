@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import compose.icons.FontAwesomeIcons
@@ -33,6 +35,7 @@ import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.PaperPlane
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.ui.theme.Black300
+import pl.skomunikacja.synclyapp.ui.theme.Gray300
 import pl.skomunikacja.synclyapp.ui.theme.Gray400
 import pl.skomunikacja.synclyapp.ui.theme.Gray600
 import pl.skomunikacja.synclyapp.ui.theme.Teal100
@@ -157,4 +160,42 @@ fun CommentInput(
         }
     }
 
+}
+
+@Composable
+fun ProfileEditInput(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    maxLines: Int = 1
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            color = Gray300,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = White100,
+                unfocusedTextColor = White100,
+                focusedBorderColor = Teal100,
+                unfocusedBorderColor = Gray300,
+                cursorColor = Teal100
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            maxLines = maxLines,
+            shape = RoundedCornerShape(12.dp)
+        )
+    }
 }

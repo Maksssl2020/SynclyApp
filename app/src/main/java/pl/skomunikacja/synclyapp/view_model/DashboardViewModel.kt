@@ -1,5 +1,7 @@
 package pl.skomunikacja.synclyapp.view_model
 
+import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,6 +11,7 @@ import pl.skomunikacja.synclyapp.config.RetrofitClient
 import pl.skomunikacja.synclyapp.helpers.ApiPostCollectionsHelper
 import pl.skomunikacja.synclyapp.helpers.ApiPostsHelper
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
+import pl.skomunikacja.synclyapp.helpers.PostCollectionsManager
 import pl.skomunikacja.synclyapp.model.DashboardTab
 import pl.skomunikacja.synclyapp.model.post.Post
 
@@ -33,6 +36,8 @@ class DashboardViewModel  : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
+    private val _isFetchingPostCollections = MutableStateFlow(false)
+    val isFetchingPostCollections = _isFetchingPostCollections.asStateFlow()
 
     private var endReachedForYou = false
     private var endReachedFollowing = false
@@ -46,6 +51,34 @@ class DashboardViewModel  : ViewModel() {
                 DashboardTab.FOR_YOU -> loadForYouPosts(userId)
                 DashboardTab.FOLLOWED -> loadFollowedPosts(userId)
                 DashboardTab.USER -> loadUserPosts(userId)
+            }
+        }
+    }
+
+    fun ensurePostCollectionsLoaded() {
+        val authenticationData = ApplicationManager.authenticationData.value
+        val userId = authenticationData?.userId ?: return
+
+        if (PostCollectionsManager.userPostCollections.value.isNotEmpty()) {
+            return
+        }
+
+        if (_isFetchingPostCollections.value) {
+            return
+        }
+
+        viewModelScope.launch {
+            _isFetchingPostCollections.value = true
+
+            try {
+                val collections =
+                    apiPostCollectionsHelper.getUserAllPostCollections(userId)
+
+                PostCollectionsManager.changeUserPostCollections(collections)
+            } catch (ex: Exception) {
+                Log.e("DashboardViewModel", "Failed to fetch post collections", ex)
+            } finally {
+                _isFetchingPostCollections.value = false
             }
         }
     }
@@ -116,13 +149,6 @@ class DashboardViewModel  : ViewModel() {
         }
     }
 
-
-    fun fetchUserPostCollections(userId: Long) {
-        viewModelScope.launch {
-            val userAllPostCollections = apiPostCollectionsHelper.getUserAllPostCollections(userId)
-            ApplicationManager.changeUserPostCollections(userAllPostCollections)
-        }
-    }
 
     fun switchTab(tab: DashboardTab) {
         _activeTab.value = tab
