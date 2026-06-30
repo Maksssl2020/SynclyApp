@@ -146,7 +146,6 @@ fun ProfileContent(
             }
         }
 
-
         when (selectedTab) {
             0 -> {
                 if (userProfilePosts.isNotEmpty()) {

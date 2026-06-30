@@ -14,6 +14,7 @@ import pl.skomunikacja.synclyapp.helpers.PostCollectionsManager
 import pl.skomunikacja.synclyapp.model.PostCollection
 import pl.skomunikacja.synclyapp.model.PostCollectionRequest
 import pl.skomunikacja.synclyapp.model.post.Post
+import kotlin.math.log
 
 class PostCollectionsViewModel : ViewModel() {
     private val apiPostCollectionsHelper = ApiPostCollectionsHelper(RetrofitClient.apiPostCollectionsService)
@@ -77,6 +78,8 @@ class PostCollectionsViewModel : ViewModel() {
 
                 val result =
                     apiPostCollectionsHelper.createPostCollection(userId, postCollectionRequest)
+
+                Log.d("createPostCollection", "result: " + result)
 
                 if (result != null) {
                     val updatedCollections =

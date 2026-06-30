@@ -38,8 +38,12 @@ class ApiPostCollectionsHelper(
     suspend fun createPostCollection(userId: Long, postCollectionRequest: PostCollectionRequest): PostCollection?  {
         return try {
             val response =  api.createPostCollection(userId, postCollectionRequest);
-            response.isSuccessful
-            response.body()
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                println("Failed to create post collection: ${response.code()} ${response.errorBody()?.string()}")
+                null
+            }
         } catch (ex: Exception) {
             println("Failed to create post collection: ${ex.message}")
             null
