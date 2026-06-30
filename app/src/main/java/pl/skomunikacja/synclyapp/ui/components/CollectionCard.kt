@@ -62,7 +62,6 @@ fun CollectionCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Color indicator
                     Box(
                         modifier = Modifier
                             .size(16.dp)
