@@ -152,7 +152,6 @@ fun FriendsScreen(
                             onCardClick = {
                                 onNavigateToUserProfile(friend.user.userId)
                             },
-                            onMoreClick = { /* TODO: Show options menu */ }
                         )
                     }
                 }

@@ -48,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import pl.skomunikacja.synclyapp.helpers.ApplicationManager
 import pl.skomunikacja.synclyapp.helpers.parseHexColor
 import pl.skomunikacja.synclyapp.model.CollectionColor
+import pl.skomunikacja.synclyapp.ui.components.ColorSelect
 import pl.skomunikacja.synclyapp.ui.theme.Black200
 import pl.skomunikacja.synclyapp.ui.theme.Black300
 import pl.skomunikacja.synclyapp.ui.theme.Black400
@@ -301,10 +302,5 @@ fun PostCollectionFormScreen(
             }
         }
     }
-}
-
-@Composable
-fun ColorSelect(color: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
-    TODO("Not yet implemented")
 }
 

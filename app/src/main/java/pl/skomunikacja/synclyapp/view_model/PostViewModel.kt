@@ -171,10 +171,7 @@ class PostViewModel(initialPost: Post) : ViewModel() {
                         if (isActive) apiLikesHelper.unlikePost(userId, currentPost.id)
                         else apiLikesHelper.likePost(userId, currentPost.id)
 
-                    PostActionType.SAVE ->
-                        TODO()
-//                        if (isActive) apiPostCollectionHelper.unsavePostFromCollection(currentPost.id.toLong())
-//                        else apiHelper.savePost(currentPost.id.toLong())
+                    PostActionType.SAVE -> TODO()
 
                     PostActionType.SHARE ->
                         if (isActive) apiPostsHelper.unsharePost(userId, currentPost.id)

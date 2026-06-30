@@ -60,7 +60,6 @@ fun FriendCard(
     friend: FriendUserData,
     onAvatarClick: () -> Unit = {},
     onCardClick: () -> Unit = {},
-    onMoreClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -134,14 +133,6 @@ fun FriendCard(
             Column(
                 horizontalAlignment = Alignment.End
             ) {
-                IconButton(onClick = onMoreClick) {
-                    Icon(
-                        Icons.Default.MoreVert,
-                        contentDescription = "More options",
-                        tint = Gray300
-                    )
-                }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {

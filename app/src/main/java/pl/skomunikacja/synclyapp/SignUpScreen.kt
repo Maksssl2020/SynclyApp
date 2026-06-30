@@ -89,7 +89,6 @@ fun SignUpScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo/Title
         Text(
             text = "Syncly",
             fontSize = 36.sp,

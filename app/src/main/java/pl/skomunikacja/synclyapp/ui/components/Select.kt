@@ -24,7 +24,7 @@ import pl.skomunikacja.synclyapp.ui.theme.Gray600
 import pl.skomunikacja.synclyapp.ui.theme.White100
 
 @Composable
-private fun ColorSelect(
+fun ColorSelect(
     color: String,
     selected: Boolean,
     onClick: () -> Unit,

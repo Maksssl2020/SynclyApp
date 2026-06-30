@@ -74,7 +74,6 @@ fun VideoViewerModal(
                 }
 
                 if (videoUrls.size == 1) {
-                    // Single video
                     VideoPlayer(
                         videoUrl = videoUrls[0],
                         modifier = Modifier
@@ -82,7 +81,6 @@ fun VideoViewerModal(
                             .clickable(enabled = false) { }
                     )
                 } else {
-                    // Multiple videos with pager
                     val pagerState = rememberPagerState(
                         initialPage = initialIndex,
                         pageCount = { videoUrls.size }
@@ -103,7 +101,6 @@ fun VideoViewerModal(
                             )
                         }
 
-                        // Page indicator
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()

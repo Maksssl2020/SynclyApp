@@ -189,7 +189,7 @@ private fun CollectionItem(
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "${collection.posts.size} postów",
+                    text = "${collection.posts.size} posts",
                     color = Gray400,
                     fontSize = 14.sp
                 )

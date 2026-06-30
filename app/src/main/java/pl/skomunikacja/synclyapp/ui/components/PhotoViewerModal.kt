@@ -148,9 +148,7 @@ private fun ModalImageItem(
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null
-                ) {
-                    // konsumuje kliknięcie, żeby nie zamykać modala po kliknięciu w zdjęcie
-                },
+                ) {},
             contentAlignment = Alignment.Center
         ) {
             PostImage(
